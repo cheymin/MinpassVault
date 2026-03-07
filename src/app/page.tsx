@@ -1,11 +1,35 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { LoginForm } from '@/components/auth/LoginForm'
-import { RegisterForm } from '@/components/auth/RegisterForm'
+import { InitForm } from '@/components/auth/InitForm'
+import { checkInitialized } from '@/lib/init'
 
 function LandingContent() {
   const [isLogin, setIsLogin] = useState(true)
+  const [isInitialized, setIsInitialized] = useState<boolean | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const checkInit = async () => {
+      const initialized = await checkInitialized()
+      setIsInitialized(initialized)
+      setLoading(false)
+    }
+    checkInit()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    )
+  }
+
+  if (!isInitialized) {
+    return <InitForm />
+  }
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -39,13 +63,13 @@ function LandingContent() {
                   !isLogin
                     ? 'text-primary border-b-2 border-primary'
                     : 'text-textMuted hover:text-text'
-                }`
+                }`}
               >
                 注册
               </button>
             </div>
 
-            {isLogin ? <LoginForm /> : <RegisterForm />}
+            {isLogin ? <LoginForm /> : <div className="text-center text-textMuted py-4">系统已初始化，请联系管理员获取账户</div>}
           </div>
 
           <p className="text-center text-xs text-textMuted mt-6">
