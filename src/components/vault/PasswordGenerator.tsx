@@ -40,13 +40,13 @@ export function PasswordGenerator({ onGenerated, isOpen, onClose }: PasswordGene
   const strength = password ? calculatePasswordStrength(password) : null
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Password Generator">
+    <Modal isOpen={isOpen} onClose={onClose} title="密码生成器">
       <div className="space-y-6">
         <div>
-          <label className="block text-sm font-medium text-textMuted mb-2">Generated Password</label>
+          <label className="block text-sm font-medium text-textMuted mb-2">生成的密码</label>
           <div className="flex gap-2">
             <div className="flex-1 bg-background border border-border rounded-lg px-4 py-3 font-mono text-text break-all">
-              {password || 'Click Generate to create a password'}
+              {password || '点击生成按钮创建密码'}
             </div>
           </div>
           {strength && (
@@ -72,7 +72,7 @@ export function PasswordGenerator({ onGenerated, isOpen, onClose }: PasswordGene
 
         <div>
           <label className="block text-sm font-medium text-textMuted mb-2">
-            Length: {options.length}
+            长度: {options.length}
           </label>
           <input
             type="range"
@@ -89,13 +89,13 @@ export function PasswordGenerator({ onGenerated, isOpen, onClose }: PasswordGene
         </div>
 
         <div className="space-y-3">
-          <label className="block text-sm font-medium text-textMuted">Character Types</label>
+          <label className="block text-sm font-medium text-textMuted">字符类型</label>
           
           {[
-            { key: 'uppercase', label: 'Uppercase (A-Z)', value: options.uppercase },
-            { key: 'lowercase', label: 'Lowercase (a-z)', value: options.lowercase },
-            { key: 'numbers', label: 'Numbers (0-9)', value: options.numbers },
-            { key: 'symbols', label: 'Symbols (!@#$%^&*)', value: options.symbols },
+            { key: 'uppercase', label: '大写字母 (A-Z)', value: options.uppercase },
+            { key: 'lowercase', label: '小写字母', value: options.lowercase },
+            { key: 'numbers', label: '数字 (0-9)', value: options.numbers },
+            { key: 'symbols', label: '符号 (!@#$%^&*)', value: options.symbols },
           ].map((option) => (
             <label key={option.key} className="flex items-center gap-3 cursor-pointer">
               <input
@@ -113,14 +113,14 @@ export function PasswordGenerator({ onGenerated, isOpen, onClose }: PasswordGene
 
         <div className="flex gap-3">
           <Button variant="secondary" onClick={handleCopy} disabled={!password}>
-            Copy
+            复制
           </Button>
           <Button variant="secondary" onClick={handleGenerate} className="flex-1">
-            Generate
+            生成
           </Button>
           {onGenerated && (
             <Button onClick={handleUse} disabled={!password}>
-              Use Password
+              使用密码
             </Button>
           )}
         </div>

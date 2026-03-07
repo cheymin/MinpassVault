@@ -47,9 +47,9 @@ export function ImportExport({ isOpen, onClose }: ImportExportProps) {
       document.body.removeChild(a)
       URL.revokeObjectURL(url)
 
-      setSuccess('Export completed successfully!')
+      setSuccess('导出成功！')
     } catch (err) {
-      setError('Failed to export data')
+      setError('导出数据失败')
     } finally {
       setExporting(false)
     }
@@ -86,9 +86,9 @@ export function ImportExport({ isOpen, onClose }: ImportExportProps) {
         if (!result.error) imported++
       }
 
-      setSuccess(`Successfully imported ${imported} items`)
+      setSuccess(`成功导入 ${imported} 个项目`)
     } catch (err) {
-      setError('Failed to import data. Please check the file format.')
+      setError('导入数据失败，请检查文件格式。')
     } finally {
       setImporting(false)
       e.target.value = ''
@@ -102,30 +102,30 @@ export function ImportExport({ isOpen, onClose }: ImportExportProps) {
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Import / Export">
+    <Modal isOpen={isOpen} onClose={handleClose} title="导入 / 导出">
       <div className="space-y-6">
         <div>
-          <h3 className="text-lg font-medium text-text mb-2">Export Data</h3>
+          <h3 className="text-lg font-medium text-text mb-2">导出数据</h3>
           <p className="text-sm text-textMuted mb-4">
-            Download all your vault items as a JSON file. This file contains unencrypted data, keep it safe!
+            将所有保险库项目导出为 JSON 文件。此文件包含未加密数据，请妥善保管！
           </p>
           <Button onClick={handleExport} loading={exporting} className="w-full">
-            Export to JSON
+            导出为 JSON
           </Button>
         </div>
 
         <div className="border-t border-border pt-6">
-          <h3 className="text-lg font-medium text-text mb-2">Import Data</h3>
+          <h3 className="text-lg font-medium text-text mb-2">导入数据</h3>
           <p className="text-sm text-textMuted mb-4">
-            Import vault items from a JSON file. This will add new items to your vault.
+            从 JSON 文件导入保险库项目。这将添加新项目到您的保险库。
           </p>
           <label className="block">
             <div className="w-full bg-surface border border-border border-dashed rounded-lg p-8 text-center cursor-pointer hover:border-primaryLight transition-colors">
               <svg className="w-12 h-12 mx-auto text-textMuted mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
               </svg>
-              <span className="text-textMuted">Click to select a file</span>
-              <span className="block text-xs text-textMuted mt-1">JSON format only</span>
+              <span className="text-textMuted">点击选择文件</span>
+              <span className="block text-xs text-textMuted mt-1">仅支持 JSON 格式</span>
             </div>
             <input
               type="file"
@@ -150,7 +150,7 @@ export function ImportExport({ isOpen, onClose }: ImportExportProps) {
         )}
 
         <Button variant="secondary" onClick={handleClose} className="w-full">
-          Close
+          关闭
         </Button>
       </div>
     </Modal>

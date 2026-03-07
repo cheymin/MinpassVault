@@ -138,12 +138,12 @@ export function calculatePasswordStrength(password: string): {
   if (/[^a-zA-Z0-9]/.test(password)) score += 1
 
   if (score <= 2) {
-    return { score, label: 'Weak', color: 'text-danger' }
+    return { score, label: '弱', color: 'text-danger' }
   } else if (score <= 4) {
-    return { score, label: 'Fair', color: 'text-warning' }
+    return { score, label: '一般', color: 'text-warning' }
   } else if (score <= 5) {
-    return { score, label: 'Good', color: 'text-primaryLight' }
+    return { score, label: '良好', color: 'text-primaryLight' }
   } else {
-    return { score, label: 'Strong', color: 'text-success' }
+    return { score, label: '强', color: 'text-success' }
   }
 }

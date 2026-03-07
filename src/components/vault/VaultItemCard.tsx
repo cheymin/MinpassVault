@@ -32,7 +32,7 @@ export function VaultItemCard({ item }: VaultItemCardProps) {
   }
 
   const handleDelete = async () => {
-    if (confirm('Are you sure you want to delete this item?')) {
+    if (confirm('确定要删除此项目吗？')) {
       await deleteItem(item.id)
     }
   }
@@ -101,10 +101,10 @@ export function VaultItemCard({ item }: VaultItemCardProps) {
 
           <div className="flex gap-3 pt-4 border-t border-border">
             <Button variant="danger" onClick={handleDelete} className="flex-1">
-              Delete
+              删除
             </Button>
             <Button variant="secondary" onClick={() => setShowDetails(false)} className="flex-1">
-              Close
+              关闭
             </Button>
           </div>
         </div>
@@ -146,23 +146,23 @@ function LoginItemDetails({
     return (
       <div className="space-y-4">
         <Input
-          label="Username"
+          label="用户名"
           value={formData.username}
           onChange={(e) => setFormData({ ...formData, username: e.target.value })}
         />
         <Input
-          label="Password"
+          label="密码"
           type="password"
           value={formData.password}
           onChange={(e) => setFormData({ ...formData, password: e.target.value })}
         />
         <Input
-          label="URL"
+          label="网址"
           value={formData.url}
           onChange={(e) => setFormData({ ...formData, url: e.target.value })}
         />
         <div>
-          <label className="block text-sm font-medium text-textMuted mb-1.5">Notes</label>
+          <label className="block text-sm font-medium text-textMuted mb-1.5">备注</label>
           <textarea
             value={formData.notes}
             onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
@@ -171,10 +171,10 @@ function LoginItemDetails({
         </div>
         <div className="flex gap-3">
           <Button variant="secondary" onClick={() => setEditing(false)} className="flex-1">
-            Cancel
+            取消
           </Button>
           <Button onClick={handleSave} loading={loading} className="flex-1">
-            Save
+            保存
           </Button>
         </div>
       </div>
@@ -185,38 +185,38 @@ function LoginItemDetails({
     <div className="space-y-4">
       <div className="flex justify-end">
         <Button variant="ghost" size="sm" onClick={() => setEditing(true)}>
-          Edit
+          编辑
         </Button>
       </div>
       
       <DetailField
-        label="Username"
+        label="用户名"
         value={data.username}
         copied={copied === 'username'}
         onCopy={() => copyToClipboard(data.username, 'username')}
       />
       
       <div>
-        <label className="block text-sm font-medium text-textMuted mb-1.5">Password</label>
+        <label className="block text-sm font-medium text-textMuted mb-1.5">密码</label>
         <div className="flex gap-2">
           <div className="flex-1 bg-background border border-border rounded-lg px-4 py-2.5 font-mono text-text">
             {showPassword ? data.password : '••••••••••••'}
           </div>
           <Button variant="secondary" onClick={() => setShowPassword(!showPassword)}>
-            {showPassword ? 'Hide' : 'Show'}
+            {showPassword ? '隐藏' : '显示'}
           </Button>
           <Button
             variant="secondary"
             onClick={() => copyToClipboard(data.password, 'password')}
           >
-            {copied === 'password' ? 'Copied!' : 'Copy'}
+            {copied === 'password' ? '已复制!' : '复制'}
           </Button>
         </div>
       </div>
       
       {data.url && (
         <DetailField
-          label="URL"
+          label="网址"
           value={data.url}
           copied={copied === 'url'}
           onCopy={() => copyToClipboard(data.url, 'url')}
@@ -226,7 +226,7 @@ function LoginItemDetails({
       
       {data.notes && (
         <div>
-          <label className="block text-sm font-medium text-textMuted mb-1.5">Notes</label>
+          <label className="block text-sm font-medium text-textMuted mb-1.5">备注</label>
           <div className="bg-background border border-border rounded-lg p-4">
             <p className="text-text whitespace-pre-wrap">{data.notes}</p>
           </div>
@@ -252,39 +252,39 @@ function CardItemDetails({
   return (
     <div className="space-y-4">
       <DetailField
-        label="Cardholder Name"
+        label="持卡人姓名"
         value={data.cardholderName}
         copied={copied === 'name'}
         onCopy={() => copyToClipboard(data.cardholderName, 'name')}
       />
       <DetailField
-        label="Card Number"
+        label="卡号"
         value={data.cardNumber}
         copied={copied === 'number'}
         onCopy={() => copyToClipboard(data.cardNumber, 'number')}
       />
       <div className="grid grid-cols-2 gap-4">
         <DetailField
-          label="Expiry Date"
+          label="有效期"
           value={data.expiryDate}
           copied={copied === 'expiry'}
           onCopy={() => copyToClipboard(data.expiryDate, 'expiry')}
         />
         <div>
-          <label className="block text-sm font-medium text-textMuted mb-1.5">CVV</label>
+          <label className="block text-sm font-medium text-textMuted mb-1.5">安全码</label>
           <div className="flex gap-2">
             <div className="flex-1 bg-background border border-border rounded-lg px-4 py-2.5 font-mono text-text">
               {showPassword ? data.cvv : '•••'}
             </div>
             <Button variant="secondary" onClick={() => copyToClipboard(data.cvv, 'cvv')}>
-              {copied === 'cvv' ? 'Copied!' : 'Copy'}
+              {copied === 'cvv' ? '已复制!' : '复制'}
             </Button>
           </div>
         </div>
       </div>
       {data.notes && (
         <div>
-          <label className="block text-sm font-medium text-textMuted mb-1.5">Notes</label>
+          <label className="block text-sm font-medium text-textMuted mb-1.5">备注</label>
           <div className="bg-background border border-border rounded-lg p-4">
             <p className="text-text whitespace-pre-wrap">{data.notes}</p>
           </div>
@@ -308,26 +308,26 @@ function IdentityItemDetails({
   return (
     <div className="space-y-4">
       <DetailField
-        label="Full Name"
+        label="姓名"
         value={data.fullName}
         copied={copied === 'name'}
         onCopy={() => copyToClipboard(data.fullName, 'name')}
       />
       <DetailField
-        label="Email"
+        label="邮箱"
         value={data.email}
         copied={copied === 'email'}
         onCopy={() => copyToClipboard(data.email, 'email')}
       />
       <DetailField
-        label="Phone"
+        label="电话"
         value={data.phone}
         copied={copied === 'phone'}
         onCopy={() => copyToClipboard(data.phone, 'phone')}
       />
       {data.address && (
         <div>
-          <label className="block text-sm font-medium text-textMuted mb-1.5">Address</label>
+          <label className="block text-sm font-medium text-textMuted mb-1.5">地址</label>
           <div className="bg-background border border-border rounded-lg p-4">
             <p className="text-text whitespace-pre-wrap">{data.address}</p>
           </div>
@@ -335,7 +335,7 @@ function IdentityItemDetails({
       )}
       {data.notes && (
         <div>
-          <label className="block text-sm font-medium text-textMuted mb-1.5">Notes</label>
+          <label className="block text-sm font-medium text-textMuted mb-1.5">备注</label>
           <div className="bg-background border border-border rounded-lg p-4">
             <p className="text-text whitespace-pre-wrap">{data.notes}</p>
           </div>
@@ -372,7 +372,7 @@ function DetailField({
           )}
         </div>
         <Button variant="secondary" onClick={onCopy}>
-          {copied ? 'Copied!' : 'Copy'}
+          {copied ? '已复制!' : '复制'}
         </Button>
       </div>
     </div>

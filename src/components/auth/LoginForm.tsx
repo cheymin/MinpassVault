@@ -48,8 +48,8 @@ export function LoginForm() {
         <>
           <Input
             type="email"
-            label="Email"
-            placeholder="Enter your email"
+            label="邮箱"
+            placeholder="请输入邮箱"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -61,8 +61,8 @@ export function LoginForm() {
           />
           <Input
             type="password"
-            label="Master Password"
-            placeholder="Enter your master password"
+            label="主密码"
+            placeholder="请输入主密码"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -76,8 +76,8 @@ export function LoginForm() {
       ) : (
         <Input
           type="text"
-          label="Two-Factor Authentication Code"
-          placeholder="Enter 6-digit code"
+          label="双重验证码"
+          placeholder="请输入6位验证码"
           value={twoFactorCode}
           onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
           required
@@ -97,7 +97,7 @@ export function LoginForm() {
       )}
 
       <Button type="submit" className="w-full" loading={loading}>
-        {requires2FA ? 'Verify' : 'Sign In'}
+        {requires2FA ? '验证' : '登录'}
       </Button>
     </form>
   )

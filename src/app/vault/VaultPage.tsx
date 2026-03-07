@@ -72,11 +72,11 @@ export default function VaultPage() {
   }
 
   const typeFilters: { value: VaultItemType | 'all'; label: string; icon: string }[] = [
-    { value: 'all', label: 'All', icon: '📁' },
-    { value: 'login', label: 'Logins', icon: '🔑' },
-    { value: 'secure_note', label: 'Notes', icon: '📝' },
-    { value: 'card', label: 'Cards', icon: '💳' },
-    { value: 'identity', label: 'Identity', icon: '👤' },
+    { value: 'all', label: '全部', icon: '📁' },
+    { value: 'login', label: '登录凭证', icon: '🔑' },
+    { value: 'secure_note', label: '安全笔记', icon: '📝' },
+    { value: 'card', label: '银行卡', icon: '💳' },
+    { value: 'identity', label: '身份信息', icon: '👤' },
   ]
 
   return (
@@ -100,25 +100,25 @@ export default function VaultPage() {
                 <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
                 </svg>
-                Generator
+                密码生成器
               </Button>
               <Button variant="ghost" size="sm" onClick={() => setShowImportExport(true)}>
                 <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                 </svg>
-                Import/Export
+                导入/导出
               </Button>
               <Button variant="ghost" size="sm" onClick={handleLock}>
                 <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
-                Lock
+                锁定
               </Button>
               <Button variant="ghost" size="sm" onClick={handleSignOut}>
                 <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                 </svg>
-                Sign Out
+                退出登录
               </Button>
             </div>
           </div>
@@ -133,7 +133,7 @@ export default function VaultPage() {
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
-                Add Item
+                添加项目
               </Button>
 
               <div className="space-y-1 mb-4">
@@ -158,7 +158,7 @@ export default function VaultPage() {
 
               <div className="border-t border-border pt-4">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-medium text-textMuted uppercase">Folders</span>
+                  <span className="text-xs font-medium text-textMuted uppercase">文件夹</span>
                   <button
                     onClick={() => setShowFolderModal(true)}
                     className="text-textMuted hover:text-text"
@@ -178,7 +178,7 @@ export default function VaultPage() {
                     }`}
                   >
                     <span>📁</span>
-                    <span className="text-sm">All Items</span>
+                    <span className="text-sm">全部项目</span>
                   </button>
                   {folders.map((folder) => (
                     <button
@@ -214,7 +214,7 @@ export default function VaultPage() {
             <div className="mb-6">
               <Input
                 type="search"
-                placeholder="Search vault..."
+                placeholder="搜索保险库..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 icon={
@@ -236,15 +236,15 @@ export default function VaultPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-medium text-text mb-1">No items found</h3>
+                <h3 className="text-lg font-medium text-text mb-1">未找到项目</h3>
                 <p className="text-textMuted mb-4">
-                  {search ? 'Try a different search term' : 'Add your first item to get started'}
+                  {search ? '请尝试其他搜索词' : '添加您的第一个项目开始使用'}
                 </p>
                 <Button onClick={() => setShowAddModal(true)}>
                   <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                   </svg>
-                  Add Item
+                  添加项目
                 </Button>
               </div>
             ) : (
@@ -252,7 +252,7 @@ export default function VaultPage() {
                 {favoriteItems.length > 0 && (
                   <div>
                     <h2 className="text-sm font-medium text-textMuted mb-3 flex items-center gap-2">
-                      <span className="text-warning">★</span> Favorites
+                      <span className="text-warning">★</span> 收藏
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {favoriteItems.map((item) => (
@@ -265,7 +265,7 @@ export default function VaultPage() {
                 {regularItems.length > 0 && (
                   <div>
                     {favoriteItems.length > 0 && (
-                      <h2 className="text-sm font-medium text-textMuted mb-3">All Items</h2>
+                      <h2 className="text-sm font-medium text-textMuted mb-3">全部项目</h2>
                     )}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {regularItems.map((item) => (
@@ -284,41 +284,41 @@ export default function VaultPage() {
       <PasswordGenerator isOpen={showPasswordGen} onClose={() => setShowPasswordGen(false)} />
       <ImportExport isOpen={showImportExport} onClose={() => setShowImportExport(false)} />
 
-      <Modal isOpen={showFolderModal} onClose={() => setShowFolderModal(false)} title="New Folder" size="sm">
+      <Modal isOpen={showFolderModal} onClose={() => setShowFolderModal(false)} title="新建文件夹" size="sm">
         <div className="space-y-4">
           <Input
-            label="Folder Name"
-            placeholder="Enter folder name"
+            label="文件夹名称"
+            placeholder="请输入文件夹名称"
             value={newFolderName}
             onChange={(e) => setNewFolderName(e.target.value)}
           />
           <div className="flex gap-3">
             <Button variant="secondary" onClick={() => setShowFolderModal(false)} className="flex-1">
-              Cancel
+              取消
             </Button>
             <Button onClick={handleAddFolder} className="flex-1">
-              Create
+              创建
             </Button>
           </div>
         </div>
       </Modal>
 
-      <Modal isOpen={showUnlockModal} onClose={() => setShowUnlockModal(false)} title="Vault Locked" size="sm">
+      <Modal isOpen={showUnlockModal} onClose={() => setShowUnlockModal(false)} title="保险库已锁定" size="sm">
         <div className="space-y-4">
-          <p className="text-textMuted text-sm">Enter your master password to unlock the vault.</p>
+          <p className="text-textMuted text-sm">请输入主密码解锁保险库。</p>
           <Input
             type="password"
-            placeholder="Master password"
+            placeholder="主密码"
             value={unlockPassword}
             onChange={(e) => setUnlockPassword(e.target.value)}
             error={unlockError}
           />
           <div className="flex gap-3">
             <Button variant="secondary" onClick={() => router.push('/')} className="flex-1">
-              Sign Out
+              退出登录
             </Button>
             <Button onClick={handleUnlock} className="flex-1">
-              Unlock
+              解锁
             </Button>
           </div>
         </div>

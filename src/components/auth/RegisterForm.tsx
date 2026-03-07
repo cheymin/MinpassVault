@@ -20,12 +20,12 @@ export function RegisterForm() {
     setError('')
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match')
+      setError('两次密码不一致')
       return
     }
 
     if (password.length < 8) {
-      setError('Password must be at least 8 characters')
+      setError('密码至少需要8个字符')
       return
     }
 
@@ -44,8 +44,8 @@ export function RegisterForm() {
     <form onSubmit={handleSubmit} className="space-y-4">
       <Input
         type="email"
-        label="Email"
-        placeholder="Enter your email"
+        label="邮箱"
+        placeholder="请输入邮箱"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         required
@@ -57,8 +57,8 @@ export function RegisterForm() {
       />
       <Input
         type="password"
-        label="Master Password"
-        placeholder="Create a master password"
+        label="主密码"
+        placeholder="创建主密码"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         required
@@ -70,8 +70,8 @@ export function RegisterForm() {
       />
       <Input
         type="password"
-        label="Confirm Master Password"
-        placeholder="Confirm your master password"
+        label="确认主密码"
+        placeholder="再次输入主密码"
         value={confirmPassword}
         onChange={(e) => setConfirmPassword(e.target.value)}
         required
@@ -89,7 +89,7 @@ export function RegisterForm() {
       )}
 
       <Button type="submit" className="w-full" loading={loading}>
-        Create Account
+        创建账户
       </Button>
     </form>
   )

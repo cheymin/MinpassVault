@@ -18,7 +18,7 @@ function LandingContent() {
               </svg>
             </div>
             <h1 className="text-3xl font-bold text-text mb-2">SecureVault</h1>
-            <p className="text-textMuted">End-to-end encrypted password manager</p>
+            <p className="text-textMuted">端到端加密密码管理器</p>
           </div>
 
           <div className="bg-surface border border-border rounded-xl p-6">
@@ -31,7 +31,7 @@ function LandingContent() {
                     : 'text-textMuted hover:text-text'
                 }`}
               >
-                Sign In
+                登录
               </button>
               <button
                 onClick={() => setIsLogin(false)}
@@ -39,9 +39,9 @@ function LandingContent() {
                   !isLogin
                     ? 'text-primary border-b-2 border-primary'
                     : 'text-textMuted hover:text-text'
-                }`}
+                }`
               >
-                Create Account
+                注册
               </button>
             </div>
 
@@ -49,7 +49,7 @@ function LandingContent() {
           </div>
 
           <p className="text-center text-xs text-textMuted mt-6">
-            Your data is encrypted locally. We never have access to your master password.
+            您的数据在本地加密，我们无法访问您的主密码。
           </p>
         </div>
       </div>
@@ -57,14 +57,14 @@ function LandingContent() {
       <div className="hidden lg:flex flex-1 bg-gradient-to-br from-primary/20 to-primaryLight/10 items-center justify-center p-8">
         <div className="max-w-lg">
           <h2 className="text-4xl font-bold text-text mb-6">
-            Secure your digital life
+            保护您的数字生活
           </h2>
           <div className="space-y-4">
             {[
-              { icon: '🔐', title: 'End-to-End Encryption', desc: 'Your data is encrypted before it leaves your device' },
-              { icon: '🔑', title: 'Zero-Knowledge', desc: 'We never see your master password or decrypted data' },
-              { icon: '📱', title: 'Cross-Platform', desc: 'Access your vault from any device, anywhere' },
-              { icon: '🛡️', title: 'Two-Factor Auth', desc: 'Add an extra layer of security to your account' },
+              { icon: '🔐', title: '端到端加密', desc: '数据在离开设备前就已加密' },
+              { icon: '🔑', title: '零知识架构', desc: '我们永远无法看到您的主密码或解密数据' },
+              { icon: '📱', title: '跨平台同步', desc: '随时随地从任何设备访问您的密码库' },
+              { icon: '🛡️', title: '双重验证', desc: '为您的账户添加额外的安全保护' },
             ].map((feature, i) => (
               <div key={i} className="flex items-start gap-4 bg-surface/50 rounded-lg p-4">
                 <span className="text-2xl">{feature.icon}</span>

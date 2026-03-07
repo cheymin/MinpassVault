@@ -19,6 +19,7 @@ export function AddItemModal({ isOpen, onClose }: AddItemModalProps) {
   const [folderId, setFolderId] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   
   const [loginData, setLoginData] = useState<LoginData>({
     username: '',
@@ -62,6 +63,13 @@ export function AddItemModal({ isOpen, onClose }: AddItemModalProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError(null)
+    
+    if (!name.trim()) {
+      setError('请输入项目名称')
+      return
+    }
+
     setLoading(true)
 
     let data: LoginData | SecureNoteData | CardData | IdentityData
@@ -78,6 +86,10 @@ export function AddItemModal({ isOpen, onClose }: AddItemModalProps) {
       case 'identity':
         data = identityData
         break
+      default:
+        setLoading(false)
+        setError('无效的项目类型')
+        return
     }
 
     const result = await addItem({
@@ -90,7 +102,9 @@ export function AddItemModal({ isOpen, onClose }: AddItemModalProps) {
 
     setLoading(false)
 
-    if (!result.error) {
+    if (result.error) {
+      setError(result.error)
+    } else {
       onClose()
       resetForm()
     }
@@ -107,17 +121,17 @@ export function AddItemModal({ isOpen, onClose }: AddItemModalProps) {
   }
 
   const typeOptions = [
-    { value: 'login', label: 'Login', icon: '🔑' },
-    { value: 'secure_note', label: 'Secure Note', icon: '📝' },
-    { value: 'card', label: 'Card', icon: '💳' },
-    { value: 'identity', label: 'Identity', icon: '👤' },
+    { value: 'login', label: '登录凭证', icon: '🔑' },
+    { value: 'secure_note', label: '安全笔记', icon: '📝' },
+    { value: 'card', label: '银行卡', icon: '💳' },
+    { value: 'identity', label: '身份信息', icon: '👤' },
   ]
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Add New Item" size="lg">
+    <Modal isOpen={isOpen} onClose={onClose} title="添加新项目" size="lg">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-textMuted mb-2">Type</label>
+          <label className="block text-sm font-medium text-textMuted mb-2">类型</label>
           <div className="grid grid-cols-4 gap-2">
             {typeOptions.map((option) => (
               <button
@@ -138,22 +152,28 @@ export function AddItemModal({ isOpen, onClose }: AddItemModalProps) {
         </div>
 
         <Input
-          label="Name"
-          placeholder="Item name"
+          label="名称"
+          placeholder="项目名称"
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
         />
 
+        {error && (
+          <div className="p-3 bg-danger/10 border border-danger/20 rounded-lg text-danger text-sm">
+            {error}
+          </div>
+        )}
+
         {folders.length > 0 && (
           <div>
-            <label className="block text-sm font-medium text-textMuted mb-1.5">Folder</label>
+            <label className="block text-sm font-medium text-textMuted mb-1.5">文件夹</label>
             <select
               value={folderId || ''}
               onChange={(e) => setFolderId(e.target.value || null)}
               className="w-full bg-surface border border-border rounded-lg px-4 py-2.5 text-text"
             >
-              <option value="">No folder</option>
+              <option value="">无文件夹</option>
               {folders.map((folder) => (
                 <option key={folder.id} value={folder.id}>
                   {folder.name}
@@ -166,18 +186,18 @@ export function AddItemModal({ isOpen, onClose }: AddItemModalProps) {
         {type === 'login' && (
           <>
             <Input
-              label="Username"
-              placeholder="Username or email"
+              label="用户名"
+              placeholder="用户名或邮箱"
               value={loginData.username}
               onChange={(e) => setLoginData({ ...loginData, username: e.target.value })}
             />
             <div>
-              <label className="block text-sm font-medium text-textMuted mb-1.5">Password</label>
+              <label className="block text-sm font-medium text-textMuted mb-1.5">密码</label>
               <div className="flex gap-2">
                 <div className="relative flex-1">
                   <input
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="Password"
+                    placeholder="密码"
                     value={loginData.password}
                     onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
                     className="w-full bg-surface border border-border rounded-lg px-4 py-2.5 text-text pr-10"
@@ -200,7 +220,7 @@ export function AddItemModal({ isOpen, onClose }: AddItemModalProps) {
                   </button>
                 </div>
                 <Button type="button" variant="secondary" onClick={handleGeneratePassword}>
-                  Generate
+                  生成
                 </Button>
               </div>
               {loginData.password && (
@@ -228,15 +248,15 @@ export function AddItemModal({ isOpen, onClose }: AddItemModalProps) {
               )}
             </div>
             <Input
-              label="URL"
+              label="网址"
               placeholder="https://example.com"
               value={loginData.url}
               onChange={(e) => setLoginData({ ...loginData, url: e.target.value })}
             />
             <div>
-              <label className="block text-sm font-medium text-textMuted mb-1.5">Notes</label>
+              <label className="block text-sm font-medium text-textMuted mb-1.5">备注</label>
               <textarea
-                placeholder="Additional notes"
+                placeholder="其他备注"
                 value={loginData.notes}
                 onChange={(e) => setLoginData({ ...loginData, notes: e.target.value })}
                 className="w-full bg-surface border border-border rounded-lg px-4 py-2.5 text-text min-h-[80px] resize-none"
@@ -247,9 +267,9 @@ export function AddItemModal({ isOpen, onClose }: AddItemModalProps) {
 
         {type === 'secure_note' && (
           <div>
-            <label className="block text-sm font-medium text-textMuted mb-1.5">Content</label>
+            <label className="block text-sm font-medium text-textMuted mb-1.5">内容</label>
             <textarea
-              placeholder="Write your secure note here..."
+              placeholder="在此输入安全笔记..."
               value={noteData.content}
               onChange={(e) => setNoteData({ ...noteData, content: e.target.value })}
               className="w-full bg-surface border border-border rounded-lg px-4 py-2.5 text-text min-h-[200px] resize-none"
@@ -261,26 +281,26 @@ export function AddItemModal({ isOpen, onClose }: AddItemModalProps) {
         {type === 'card' && (
           <>
             <Input
-              label="Cardholder Name"
-              placeholder="John Doe"
+              label="持卡人姓名"
+              placeholder="张三"
               value={cardData.cardholderName}
               onChange={(e) => setCardData({ ...cardData, cardholderName: e.target.value })}
             />
             <Input
-              label="Card Number"
+              label="卡号"
               placeholder="1234 5678 9012 3456"
               value={cardData.cardNumber}
               onChange={(e) => setCardData({ ...cardData, cardNumber: e.target.value })}
             />
             <div className="grid grid-cols-2 gap-4">
               <Input
-                label="Expiry Date"
+                label="有效期"
                 placeholder="MM/YY"
                 value={cardData.expiryDate}
                 onChange={(e) => setCardData({ ...cardData, expiryDate: e.target.value })}
               />
               <Input
-                label="CVV"
+                label="安全码"
                 placeholder="123"
                 type="password"
                 value={cardData.cvv}
@@ -288,9 +308,9 @@ export function AddItemModal({ isOpen, onClose }: AddItemModalProps) {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-textMuted mb-1.5">Notes</label>
+              <label className="block text-sm font-medium text-textMuted mb-1.5">备注</label>
               <textarea
-                placeholder="Additional notes"
+                placeholder="其他备注"
                 value={cardData.notes}
                 onChange={(e) => setCardData({ ...cardData, notes: e.target.value })}
                 className="w-full bg-surface border border-border rounded-lg px-4 py-2.5 text-text min-h-[80px] resize-none"
@@ -302,37 +322,37 @@ export function AddItemModal({ isOpen, onClose }: AddItemModalProps) {
         {type === 'identity' && (
           <>
             <Input
-              label="Full Name"
-              placeholder="John Doe"
+              label="姓名"
+              placeholder="张三"
               value={identityData.fullName}
               onChange={(e) => setIdentityData({ ...identityData, fullName: e.target.value })}
             />
             <Input
-              label="Email"
+              label="邮箱"
               type="email"
-              placeholder="john@example.com"
+              placeholder="zhangsan@example.com"
               value={identityData.email}
               onChange={(e) => setIdentityData({ ...identityData, email: e.target.value })}
             />
             <Input
-              label="Phone"
-              placeholder="+1 234 567 8900"
+              label="电话"
+              placeholder="+86 138 0000 0000"
               value={identityData.phone}
               onChange={(e) => setIdentityData({ ...identityData, phone: e.target.value })}
             />
             <div>
-              <label className="block text-sm font-medium text-textMuted mb-1.5">Address</label>
+              <label className="block text-sm font-medium text-textMuted mb-1.5">地址</label>
               <textarea
-                placeholder="Full address"
+                placeholder="详细地址"
                 value={identityData.address}
                 onChange={(e) => setIdentityData({ ...identityData, address: e.target.value })}
                 className="w-full bg-surface border border-border rounded-lg px-4 py-2.5 text-text min-h-[80px] resize-none"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-textMuted mb-1.5">Notes</label>
+              <label className="block text-sm font-medium text-textMuted mb-1.5">备注</label>
               <textarea
-                placeholder="Additional notes"
+                placeholder="其他备注"
                 value={identityData.notes}
                 onChange={(e) => setIdentityData({ ...identityData, notes: e.target.value })}
                 className="w-full bg-surface border border-border rounded-lg px-4 py-2.5 text-text min-h-[80px] resize-none"
@@ -343,10 +363,10 @@ export function AddItemModal({ isOpen, onClose }: AddItemModalProps) {
 
         <div className="flex gap-3 pt-4">
           <Button type="button" variant="secondary" onClick={onClose} className="flex-1">
-            Cancel
+            取消
           </Button>
           <Button type="submit" className="flex-1" loading={loading}>
-            Add Item
+            添加项目
           </Button>
         </div>
       </form>
