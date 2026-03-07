@@ -14,22 +14,33 @@
 - ⭐ **收藏功能** - 快速访问常用项目
 - 🔧 **密码生成器** - 可自定义长度和字符类型
 - 📤 **数据导入** - CSV 格式导入
+- ✏️ **编辑功能** - 支持编辑所有类型的密码项目
+- 🔐 **登录保护** - 5次失败后锁定15分钟
 - ⚙️ **个性化设置** - 自定义网站标题和图标
 - 🔄 **初始化系统** - 首次使用自动创建管理员账户
 
 **注意！本项目为学生项目，如果有漏洞可能无法及时更新**
+
 ## 预览
+
 ![image.png](https://djkl.qzz.io/file/music/1772872359702_image.png)
 ![image.png](https://djkl.qzz.io/file/music/1772872351071_image.png)
-## 🚀 部署到 Vercel
 
-### 步骤 1：一键部署
+## 🚀 部署
+
+### 方式一：Vercel
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fdjklmin%2Fpassword)
 
-点击上方按钮，将项目克隆到你的 GitHub 并部署到 Vercel。
+### 方式二：Netlify
 
-### 步骤 2：创建 Supabase 项目
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/djklmin/password)
+
+---
+
+## 📋 部署步骤
+
+### 步骤 1：创建 Supabase 项目
 
 1. 访问 [supabase.com](https://supabase.com) 注册并创建新项目
 2. 进入 SQL Editor，执行以下 SQL：
@@ -107,35 +118,45 @@ CREATE TRIGGER update_vault_items_updated_at
   EXECUTE FUNCTION update_updated_at_column();
 ```
 
-### 步骤 3：配置环境变量
+### 步骤 2：配置环境变量
 
-1. 在 Supabase 控制台，进入 Settings → API
-2. 复制 Project URL 和 anon public key
-3. 在 Vercel 项目中，进入 Settings → Environment Variables
-4. 添加以下变量：
+在 Supabase 控制台，进入 Settings → API，复制以下信息：
 
 | 变量名 | 值 |
 |--------|-----|
 | `NEXT_PUBLIC_SUPABASE_URL` | 你的 Supabase Project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | 你的 Supabase anon key |
 
-### 步骤 4：重新部署
+#### Vercel 配置
+1. 在 Vercel 项目中，进入 Settings → Environment Variables
+2. 添加上述两个变量
+3. 点击 Redeploy 重新部署
 
-在 Vercel 控制台点击 Redeploy，项目即可正常运行。
+#### Netlify 配置
+1. 在 Netlify 项目中，进入 Site settings → Build & deploy → Environment
+2. 添加上述两个变量
+3. 触发重新部署
+
+---
 
 ## 🔐 安全架构
+
+```
 用户密码 → PBKDF2 (100,000次迭代) → 派生密钥
-↓
-AES-256-CBC 加密
-↓
-加密数据存储到 Supabase (服务器无法解密)
+                ↓
+         AES-256-CBC 加密
+                ↓
+    加密数据存储到 Supabase (服务器无法解密)
+```
 
 ## 🛠️ 技术栈
 
-- **前端**: Next.js 14 + TypeScript + Tailwind CSS
-- **后端**: Supabase (PostgreSQL)
-- **加密**: CryptoJS (AES-256-CBC)
-- **部署**: Vercel
+| 类别 | 技术 |
+|------|------|
+| 前端 | Next.js 14 + TypeScript + Tailwind CSS |
+| 后端 | Supabase (PostgreSQL) |
+| 加密 | CryptoJS (AES-256-CBC) |
+| 部署 | Vercel / Netlify |
 
 ## 🎯 使用说明
 
@@ -148,10 +169,12 @@ AES-256-CBC 加密
 
 ### 主要功能
 
-- **密码管理**: 添加、编辑、删除各类密码项目
-- **文件夹管理**: 创建文件夹分类管理密码
-- **导入功能**: 支持从浏览器导出的 CSV 文件导入
-- **设置中心**: 修改密码、重置数据库、个性化设置
+| 功能 | 说明 |
+|------|------|
+| 密码管理 | 添加、编辑、删除各类密码项目 |
+| 文件夹管理 | 创建文件夹分类管理密码 |
+| 导入功能 | 支持从浏览器导出的 CSV 文件导入 |
+| 设置中心 | 修改密码、重置数据库、个性化设置 |
 
 ## ⚠️ 注意事项
 

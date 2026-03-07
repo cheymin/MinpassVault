@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { VaultItem, useVault } from '@/contexts/VaultContext'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
-import { Input } from '@/components/ui/Input'
+import { EditItemModal } from './EditItemModal'
 
 interface VaultItemCardProps {
   item: VaultItem
@@ -13,10 +13,9 @@ interface VaultItemCardProps {
 export function VaultItemCard({ item }: VaultItemCardProps) {
   const { updateItem, deleteItem } = useVault()
   const [showDetails, setShowDetails] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [copied, setCopied] = useState<string | null>(null)
-  const [editing, setEditing] = useState(false)
-  const [loading, setLoading] = useState(false)
 
   const typeIcons: Record<string, string> = {
     login: '🔑',
@@ -34,11 +33,17 @@ export function VaultItemCard({ item }: VaultItemCardProps) {
   const handleDelete = async () => {
     if (confirm('确定要删除此项目吗？')) {
       await deleteItem(item.id)
+      setShowDetails(false)
     }
   }
 
-  const handleToggleFavorite = async () => {
+  const handleToggleFavorite = async (e: React.MouseEvent) => {
+    e.stopPropagation()
     await updateItem(item.id, { favorite: !item.favorite })
+  }
+
+  const handleEdit = () => {
+    setShowEditModal(true)
   }
 
   return (
@@ -58,10 +63,7 @@ export function VaultItemCard({ item }: VaultItemCardProps) {
             </div>
           </div>
           <button
-            onClick={(e) => {
-              e.stopPropagation()
-              handleToggleFavorite()
-            }}
+            onClick={handleToggleFavorite}
             className={`text-xl transition-colors ${
               item.favorite ? 'text-warning' : 'text-textMuted opacity-0 group-hover:opacity-100'
             }`}
@@ -73,6 +75,15 @@ export function VaultItemCard({ item }: VaultItemCardProps) {
 
       <Modal isOpen={showDetails} onClose={() => setShowDetails(false)} title={item.name} size="lg">
         <div className="space-y-4">
+          <div className="flex justify-end gap-2">
+            <Button variant="ghost" size="sm" onClick={handleEdit}>
+              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+              编辑
+            </Button>
+          </div>
+
           {item.type === 'login' && (
             <LoginItemDetails
               item={item}
@@ -80,8 +91,6 @@ export function VaultItemCard({ item }: VaultItemCardProps) {
               setShowPassword={setShowPassword}
               copied={copied}
               copyToClipboard={copyToClipboard}
-              editing={editing}
-              setEditing={setEditing}
             />
           )}
           
@@ -92,7 +101,13 @@ export function VaultItemCard({ item }: VaultItemCardProps) {
           )}
           
           {item.type === 'card' && (
-            <CardItemDetails item={item} showPassword={showPassword} copied={copied} copyToClipboard={copyToClipboard} />
+            <CardItemDetails 
+              item={item} 
+              showPassword={showPassword} 
+              setShowPassword={setShowPassword}
+              copied={copied} 
+              copyToClipboard={copyToClipboard} 
+            />
           )}
           
           {item.type === 'identity' && (
@@ -109,6 +124,15 @@ export function VaultItemCard({ item }: VaultItemCardProps) {
           </div>
         </div>
       </Modal>
+
+      <EditItemModal
+        isOpen={showEditModal}
+        onClose={() => {
+          setShowEditModal(false)
+          setShowDetails(false)
+        }}
+        item={item}
+      />
     </>
   )
 }
@@ -119,76 +143,17 @@ function LoginItemDetails({
   setShowPassword,
   copied,
   copyToClipboard,
-  editing,
-  setEditing,
 }: {
   item: VaultItem
   showPassword: boolean
   setShowPassword: (v: boolean) => void
   copied: string | null
   copyToClipboard: (text: string, field: string) => void
-  editing: boolean
-  setEditing: (v: boolean) => void
 }) {
   const data = item.data as { username: string; password: string; url: string; notes: string }
-  const { updateItem } = useVault()
-  const [formData, setFormData] = useState(data)
-  const [loading, setLoading] = useState(false)
-
-  const handleSave = async () => {
-    setLoading(true)
-    await updateItem(item.id, { data: formData })
-    setEditing(false)
-    setLoading(false)
-  }
-
-  if (editing) {
-    return (
-      <div className="space-y-4">
-        <Input
-          label="用户名"
-          value={formData.username}
-          onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-        />
-        <Input
-          label="密码"
-          type="password"
-          value={formData.password}
-          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-        />
-        <Input
-          label="网址"
-          value={formData.url}
-          onChange={(e) => setFormData({ ...formData, url: e.target.value })}
-        />
-        <div>
-          <label className="block text-sm font-medium text-textMuted mb-1.5">备注</label>
-          <textarea
-            value={formData.notes}
-            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-            className="w-full bg-surface border border-border rounded-lg px-4 py-2.5 text-text min-h-[80px] resize-none"
-          />
-        </div>
-        <div className="flex gap-3">
-          <Button variant="secondary" onClick={() => setEditing(false)} className="flex-1">
-            取消
-          </Button>
-          <Button onClick={handleSave} loading={loading} className="flex-1">
-            保存
-          </Button>
-        </div>
-      </div>
-    )
-  }
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-end">
-        <Button variant="ghost" size="sm" onClick={() => setEditing(true)}>
-          编辑
-        </Button>
-      </div>
-      
       <DetailField
         label="用户名"
         value={data.username}
@@ -239,11 +204,13 @@ function LoginItemDetails({
 function CardItemDetails({
   item,
   showPassword,
+  setShowPassword,
   copied,
   copyToClipboard,
 }: {
   item: VaultItem
   showPassword: boolean
+  setShowPassword: (v: boolean) => void
   copied: string | null
   copyToClipboard: (text: string, field: string) => void
 }) {
@@ -276,6 +243,9 @@ function CardItemDetails({
             <div className="flex-1 bg-background border border-border rounded-lg px-4 py-2.5 font-mono text-text">
               {showPassword ? data.cvv : '•••'}
             </div>
+            <Button variant="secondary" onClick={() => setShowPassword(!showPassword)} className="px-3">
+              {showPassword ? '隐藏' : '显示'}
+            </Button>
             <Button variant="secondary" onClick={() => copyToClipboard(data.cvv, 'cvv')}>
               {copied === 'cvv' ? '已复制!' : '复制'}
             </Button>

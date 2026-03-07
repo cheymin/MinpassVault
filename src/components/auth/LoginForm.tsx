@@ -1,10 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+
+const MAX_ATTEMPTS = 5
+const LOCKOUT_TIME = 15 * 60 * 1000
 
 export function LoginForm() {
   const [username, setUsername] = useState('')
@@ -16,9 +19,80 @@ export function LoginForm() {
   const { signIn, verify2FA } = useAuth()
   const router = useRouter()
 
+  const [loginAttempts, setLoginAttempts] = useState(0)
+  const [lockoutUntil, setLockoutUntil] = useState<number | null>(null)
+  const [remainingTime, setRemainingTime] = useState(0)
+
+  useEffect(() => {
+    const storedAttempts = localStorage.getItem('loginAttempts')
+    const storedLockout = localStorage.getItem('lockoutUntil')
+    
+    if (storedAttempts) {
+      setLoginAttempts(parseInt(storedAttempts, 10))
+    }
+    
+    if (storedLockout) {
+      const lockoutTime = parseInt(storedLockout, 10)
+      if (lockoutTime > Date.now()) {
+        setLockoutUntil(lockoutTime)
+      } else {
+        localStorage.removeItem('lockoutUntil')
+        localStorage.removeItem('loginAttempts')
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    if (lockoutUntil) {
+      const interval = setInterval(() => {
+        const remaining = lockoutUntil - Date.now()
+        if (remaining <= 0) {
+          setLockoutUntil(null)
+          setLoginAttempts(0)
+          localStorage.removeItem('lockoutUntil')
+          localStorage.removeItem('loginAttempts')
+        } else {
+          setRemainingTime(Math.ceil(remaining / 1000))
+        }
+      }, 1000)
+      
+      return () => clearInterval(interval)
+    }
+  }, [lockoutUntil])
+
+  const handleFailedAttempt = () => {
+    const newAttempts = loginAttempts + 1
+    setLoginAttempts(newAttempts)
+    localStorage.setItem('loginAttempts', newAttempts.toString())
+    
+    if (newAttempts >= MAX_ATTEMPTS) {
+      const lockoutTime = Date.now() + LOCKOUT_TIME
+      setLockoutUntil(lockoutTime)
+      localStorage.setItem('lockoutUntil', lockoutTime.toString())
+    }
+  }
+
+  const handleSuccessfulLogin = () => {
+    setLoginAttempts(0)
+    localStorage.removeItem('loginAttempts')
+    localStorage.removeItem('lockoutUntil')
+  }
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins}:${secs.toString().padStart(2, '0')}`
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+
+    if (lockoutUntil && lockoutUntil > Date.now()) {
+      setError(`登录已被锁定，请等待 ${formatTime(remainingTime)}`)
+      return
+    }
+
     setLoading(true)
 
     if (requires2FA) {
@@ -27,6 +101,7 @@ export function LoginForm() {
       if (result.error) {
         setError(result.error)
       } else {
+        handleSuccessfulLogin()
         router.push('/vault')
       }
     } else {
@@ -34,13 +109,17 @@ export function LoginForm() {
       setLoading(false)
       if (result.error) {
         setError(result.error)
+        handleFailedAttempt()
       } else if (result.requires2FA) {
         setRequires2FA(true)
       } else {
+        handleSuccessfulLogin()
         router.push('/vault')
       }
     }
   }
+
+  const isLocked = lockoutUntil && lockoutUntil > Date.now()
 
   return (
     <div className="bg-surface border border-border rounded-xl p-6">
@@ -54,6 +133,7 @@ export function LoginForm() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
+              disabled={isLocked}
               icon={
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -67,12 +147,18 @@ export function LoginForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              disabled={isLocked}
               icon={
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
               }
             />
+            {loginAttempts > 0 && !isLocked && (
+              <div className="text-xs text-warning">
+                ⚠️ 登录失败 {loginAttempts} 次，{MAX_ATTEMPTS - loginAttempts} 次后将被锁定 15 分钟
+              </div>
+            )}
           </>
         ) : (
           <Input
@@ -97,7 +183,18 @@ export function LoginForm() {
           </div>
         )}
 
-        <Button type="submit" className="w-full" loading={loading}>
+        {isLocked && (
+          <div className="p-3 bg-warning/10 border border-warning/20 rounded-lg text-warning text-sm">
+            🔒 登录已被锁定，请等待 {formatTime(remainingTime)} 后重试
+          </div>
+        )}
+
+        <Button 
+          type="submit" 
+          className="w-full" 
+          loading={loading}
+          disabled={isLocked}
+        >
           {requires2FA ? '验证' : '登录'}
         </Button>
       </form>
