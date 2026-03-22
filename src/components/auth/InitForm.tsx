@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
+import { useToast } from '@/contexts/ToastContext'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 
@@ -13,6 +14,7 @@ export function InitForm() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const { signUp } = useAuth()
+  const { showToast } = useToast()
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -41,24 +43,25 @@ export function InitForm() {
     if (result.error) {
       setError(result.error)
     } else {
+      showToast('系统初始化成功', 'success')
       router.push('/vault')
     }
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-8">
+    <div className="min-h-screen flex items-center justify-center p-4 sm:p-8">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-2xl mb-4">
-            <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-primary/20 to-primaryLight/20 rounded-2xl mb-4 animate-fade-in">
+            <svg className="w-8 h-8 sm:w-10 sm:h-10 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
           </div>
-          <h1 className="text-3xl font-bold text-text mb-2">SecureVault</h1>
-          <p className="text-textMuted">首次使用，请创建管理员账户</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-text mb-2 bg-gradient-to-r from-text to-textMuted bg-clip-text text-transparent">SecureVault</h1>
+          <p className="text-sm sm:text-base text-textMuted">首次使用，请创建管理员账户</p>
         </div>
 
-        <div className="bg-surface border border-border rounded-xl p-6">
+        <div className="bg-gradient-to-br from-surface to-surfaceHover border border-border rounded-2xl p-6 shadow-lg">
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input
               type="text"
@@ -101,7 +104,7 @@ export function InitForm() {
             />
 
             {error && (
-              <div className="p-3 bg-danger/10 border border-danger/20 rounded-lg text-danger text-sm">
+              <div className="p-3 bg-danger/10 border border-danger/20 rounded-lg text-danger text-sm animate-fade-in">
                 {error}
               </div>
             )}

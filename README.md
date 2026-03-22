@@ -34,10 +34,6 @@
 
 点击上方按钮，将项目克隆到你的 GitHub 并部署到 Vercel。
 
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/djklmin/password)
-
-点击上方按钮，将项目克隆到你的 GitHub 并部署到 Netlify。
-
 ### 步骤 2：创建 Supabase 项目
 
 1. 访问 [supabase.com](https://supabase.com) 注册并创建新项目
@@ -185,3 +181,5 @@ CREATE TRIGGER update_vault_items_updated_at
 ---
 
 ⭐ **如果这个项目对你有帮助，请给一个 Star！**
+
+©2026 Designed by [min](https://github.com/djklmin) for you!

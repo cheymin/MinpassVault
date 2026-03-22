@@ -51,11 +51,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const storedUser = localStorage.getItem('user')
     const storedMasterKey = localStorage.getItem('masterKey')
+    const storedLoginTime = localStorage.getItem('loginTime')
+    
     if (storedUser) {
       const userData = JSON.parse(storedUser)
-      setUser(userData)
-      if (storedMasterKey) {
-        setMasterKey(storedMasterKey)
+      
+      const LOGIN_EXPIRY = 15 * 60 * 1000
+      const isExpired = storedLoginTime && (Date.now() - parseInt(storedLoginTime)) > LOGIN_EXPIRY
+      
+      if (isExpired) {
+        localStorage.removeItem('user')
+        localStorage.removeItem('masterKey')
+        localStorage.removeItem('loginTime')
+        setUser(null)
+        setMasterKey(null)
+      } else {
+        setUser(userData)
+        if (storedMasterKey) {
+          setMasterKey(storedMasterKey)
+        }
       }
     }
     setLoading(false)
@@ -155,6 +169,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setMasterKey(decryptedMasterKey)
         localStorage.setItem('user', JSON.stringify(newUser))
         localStorage.setItem('masterKey', decryptedMasterKey)
+        localStorage.setItem('loginTime', Date.now().toString())
 
         return { requires2FA: false, error: null }
       } catch {
@@ -186,6 +201,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setMasterKey(pendingUser.masterKey)
     localStorage.setItem('user', JSON.stringify(newUser))
     localStorage.setItem('masterKey', pendingUser.masterKey)
+    localStorage.setItem('loginTime', Date.now().toString())
     setPendingUser(null)
 
     return { error: null }
@@ -196,6 +212,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setMasterKey(null)
     localStorage.removeItem('user')
     localStorage.removeItem('masterKey')
+    localStorage.removeItem('loginTime')
   }
 
   const unlockVault = async (password: string) => {

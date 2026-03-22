@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
+import { useToast } from '@/contexts/ToastContext'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 
@@ -17,6 +18,7 @@ export function LoginForm() {
   const [loading, setLoading] = useState(false)
   const [requires2FA, setRequires2FA] = useState(false)
   const { signIn, verify2FA } = useAuth()
+  const { showToast } = useToast()
   const router = useRouter()
 
   const [loginAttempts, setLoginAttempts] = useState(0)
@@ -102,6 +104,7 @@ export function LoginForm() {
         setError(result.error)
       } else {
         handleSuccessfulLogin()
+        showToast('登录成功', 'success')
         router.push('/vault')
       }
     } else {
@@ -114,6 +117,7 @@ export function LoginForm() {
         setRequires2FA(true)
       } else {
         handleSuccessfulLogin()
+        showToast('登录成功', 'success')
         router.push('/vault')
       }
     }

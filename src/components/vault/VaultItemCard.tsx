@@ -24,6 +24,13 @@ export function VaultItemCard({ item }: VaultItemCardProps) {
     identity: '👤',
   }
 
+  const typeGradients: Record<string, string> = {
+    login: 'from-blue-500/20 to-cyan-500/20',
+    secure_note: 'from-purple-500/20 to-pink-500/20',
+    card: 'from-amber-500/20 to-orange-500/20',
+    identity: 'from-green-500/20 to-emerald-500/20',
+  }
+
   const copyToClipboard = async (text: string, field: string) => {
     await navigator.clipboard.writeText(text)
     setCopied(field)
@@ -49,23 +56,25 @@ export function VaultItemCard({ item }: VaultItemCardProps) {
   return (
     <>
       <div
-        className="bg-surface border border-border rounded-lg p-4 hover:border-primaryLight transition-colors cursor-pointer group"
+        className="bg-gradient-to-br from-surface to-surfaceHover border border-border rounded-xl p-4 hover:border-primaryLight transition-all duration-300 cursor-pointer group hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1"
         onClick={() => setShowDetails(true)}
       >
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <span className="text-2xl">{typeIcons[item.type]}</span>
+            <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br ${typeGradients[item.type]} flex items-center justify-center text-xl sm:text-2xl`}>
+              {typeIcons[item.type]}
+            </div>
             <div>
-              <h3 className="font-medium text-text">{item.name}</h3>
+              <h3 className="font-medium text-text text-sm sm:text-base">{item.name}</h3>
               {item.type === 'login' && (
-                <p className="text-sm text-textMuted">{(item.data as { username: string }).username}</p>
+                <p className="text-xs sm:text-sm text-textMuted">{(item.data as { username: string }).username}</p>
               )}
             </div>
           </div>
           <button
             onClick={handleToggleFavorite}
-            className={`text-xl transition-colors ${
-              item.favorite ? 'text-warning' : 'text-textMuted opacity-0 group-hover:opacity-100'
+            className={`text-xl transition-all duration-200 ${
+              item.favorite ? 'text-warning scale-110' : 'text-textMuted opacity-0 group-hover:opacity-100 hover:scale-110'
             }`}
           >
             {item.favorite ? '★' : '☆'}
@@ -114,7 +123,7 @@ export function VaultItemCard({ item }: VaultItemCardProps) {
             <IdentityItemDetails item={item} copied={copied} copyToClipboard={copyToClipboard} />
           )}
 
-          <div className="flex gap-3 pt-4 border-t border-border">
+          <div className="flex gap-3 pt-4 border-t border-border/50">
             <Button variant="danger" onClick={handleDelete} className="flex-1">
               删除
             </Button>
@@ -332,7 +341,7 @@ function DetailField({
     <div>
       <label className="block text-sm font-medium text-textMuted mb-1.5">{label}</label>
       <div className="flex gap-2">
-        <div className="flex-1 bg-background border border-border rounded-lg px-4 py-2.5 text-text overflow-hidden">
+        <div className="flex-1 bg-background/50 backdrop-blur-sm border border-border rounded-lg px-4 py-2.5 text-text overflow-hidden hover:border-primary/50 transition-colors">
           {isLink ? (
             <a href={value} target="_blank" rel="noopener noreferrer" className="text-primaryLight hover:underline truncate block">
               {value}
@@ -341,7 +350,7 @@ function DetailField({
             <span className="truncate block">{value}</span>
           )}
         </div>
-        <Button variant="secondary" onClick={onCopy}>
+        <Button variant="secondary" onClick={onCopy} className="shrink-0">
           {copied ? '已复制!' : '复制'}
         </Button>
       </div>

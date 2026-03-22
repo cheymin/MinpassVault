@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useVault, VaultItemType, LoginData, SecureNoteData, CardData, IdentityData, VaultItem } from '@/contexts/VaultContext'
+import { useToast } from '@/contexts/ToastContext'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Modal } from '@/components/ui/Modal'
@@ -15,6 +16,7 @@ interface EditItemModalProps {
 
 export function EditItemModal({ isOpen, onClose, item }: EditItemModalProps) {
   const { updateItem, folders } = useVault()
+  const { showToast } = useToast()
   const [type, setType] = useState<VaultItemType>('login')
   const [name, setName] = useState('')
   const [folderId, setFolderId] = useState<string | null>(null)
@@ -126,6 +128,7 @@ export function EditItemModal({ isOpen, onClose, item }: EditItemModalProps) {
     if (result.error) {
       setError(result.error)
     } else {
+      showToast('项目更新成功', 'success')
       onClose()
     }
   }

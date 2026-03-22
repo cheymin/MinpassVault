@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { useVault } from '@/contexts/VaultContext'
+import { useToast } from '@/contexts/ToastContext'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Modal } from '@/components/ui/Modal'
@@ -12,6 +13,7 @@ import { resetDatabase } from '@/lib/init'
 export default function SettingsPage() {
   const { user, signOut, changePassword, updateSiteSettings } = useAuth()
   const { items, addItem } = useVault()
+  const { showToast } = useToast()
   const router = useRouter()
 
   const [showChangePassword, setShowChangePassword] = useState(false)
@@ -23,19 +25,15 @@ export default function SettingsPage() {
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [passwordError, setPasswordError] = useState('')
-  const [passwordSuccess, setPasswordSuccess] = useState('')
   const [passwordLoading, setPasswordLoading] = useState(false)
 
   const [resetLoading, setResetLoading] = useState(false)
   const [csvLoading, setCsvLoading] = useState(false)
-  const [csvError, setCsvError] = useState('')
-  const [csvSuccess, setCsvSuccess] = useState('')
 
   const [siteTitle, setSiteTitle] = useState('')
   const [siteIcon, setSiteIcon] = useState('')
   const [siteSettingsLoading, setSiteSettingsLoading] = useState(false)
   const [siteSettingsError, setSiteSettingsError] = useState('')
-  const [siteSettingsSuccess, setSiteSettingsSuccess] = useState('')
 
   useEffect(() => {
     if (user) {
@@ -47,7 +45,6 @@ export default function SettingsPage() {
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault()
     setPasswordError('')
-    setPasswordSuccess('')
 
     if (newPassword !== confirmPassword) {
       setPasswordError('两次密码不一致')
@@ -66,7 +63,7 @@ export default function SettingsPage() {
     if (result.error) {
       setPasswordError(result.error)
     } else {
-      setPasswordSuccess('密码修改成功')
+      showToast('密码修改成功', 'success')
       setOldPassword('')
       setNewPassword('')
       setConfirmPassword('')
@@ -80,8 +77,9 @@ export default function SettingsPage() {
     setResetLoading(false)
 
     if (result.error) {
-      alert('重置失败: ' + result.error)
+      showToast('重置失败: ' + result.error, 'error')
     } else {
+      showToast('数据库已重置', 'success')
       signOut()
       router.push('/')
     }
@@ -138,9 +136,9 @@ export default function SettingsPage() {
         if (!result.error) imported++
       }
 
-      setCsvSuccess(`成功导入 ${imported} 个项目`)
+      showToast(`成功导入 ${imported} 个项目`, 'success')
     } catch (err) {
-      setCsvError(err instanceof Error ? err.message : '导入失败，请检查文件格式')
+      showToast(err instanceof Error ? err.message : '导入失败，请检查文件格式', 'error')
     } finally {
       setCsvLoading(false)
       e.target.value = ''
@@ -150,7 +148,6 @@ export default function SettingsPage() {
   const handleSiteSettings = async (e: React.FormEvent) => {
     e.preventDefault()
     setSiteSettingsError('')
-    setSiteSettingsSuccess('')
     setSiteSettingsLoading(true)
 
     const result = await updateSiteSettings(siteTitle, siteIcon)
@@ -159,11 +156,8 @@ export default function SettingsPage() {
     if (result.error) {
       setSiteSettingsError(result.error)
     } else {
-      setSiteSettingsSuccess('设置已保存')
-      setTimeout(() => {
-        setShowSiteSettings(false)
-        setSiteSettingsSuccess('')
-      }, 1500)
+      showToast('设置已保存', 'success')
+      setShowSiteSettings(false)
     }
   }
 
@@ -188,28 +182,38 @@ export default function SettingsPage() {
         </div>
       </header>
 
-      <div className="max-w-2xl mx-auto px-4 py-8">
-        <div className="space-y-6">
-          <div className="bg-surface border border-border rounded-xl p-6">
-            <h2 className="text-lg font-medium text-text mb-4">账户信息</h2>
-            <div className="space-y-2">
-              <div className="flex justify-between">
+      <div className="max-w-2xl mx-auto px-4 py-6 sm:py-8">
+        <div className="space-y-4 sm:space-y-6">
+          <div className="bg-gradient-to-br from-surface to-surfaceHover border border-border rounded-2xl p-6 shadow-lg">
+            <h2 className="text-lg font-medium text-text mb-4 flex items-center gap-2">
+              <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              账户信息
+            </h2>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center p-3 bg-background/50 rounded-lg">
                 <span className="text-textMuted">用户名</span>
-                <span className="text-text">{user?.username}</span>
+                <span className="text-text font-medium">{user?.username}</span>
               </div>
             </div>
           </div>
 
-          <div className="bg-surface border border-border rounded-xl p-6">
-            <h2 className="text-lg font-medium text-text mb-4">网站设置</h2>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
+          <div className="bg-gradient-to-br from-surface to-surfaceHover border border-border rounded-2xl p-6 shadow-lg">
+            <h2 className="text-lg font-medium text-text mb-4 flex items-center gap-2">
+              <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+              </svg>
+              网站设置
+            </h2>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center p-3 bg-background/50 rounded-lg">
                 <div>
                   <p className="text-text">网站标题</p>
                   <p className="text-sm text-textMuted">{user?.siteTitle || 'SecureVault密码管理器'}</p>
                 </div>
               </div>
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between items-center p-3 bg-background/50 rounded-lg">
                 <div>
                   <p className="text-text">网站图标</p>
                   <div className="flex items-center gap-2 mt-1">
@@ -230,15 +234,25 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <div className="bg-surface border border-border rounded-xl p-6">
-            <h2 className="text-lg font-medium text-text mb-4">安全设置</h2>
+          <div className="bg-gradient-to-br from-surface to-surfaceHover border border-border rounded-2xl p-6 shadow-lg">
+            <h2 className="text-lg font-medium text-text mb-4 flex items-center gap-2">
+              <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+              安全设置
+            </h2>
             <Button onClick={() => setShowChangePassword(true)} variant="secondary" className="w-full">
               更改主密码
             </Button>
           </div>
 
-          <div className="bg-surface border border-border rounded-xl p-6">
-            <h2 className="text-lg font-medium text-text mb-4">数据管理</h2>
+          <div className="bg-gradient-to-br from-surface to-surfaceHover border border-border rounded-2xl p-6 shadow-lg">
+            <h2 className="text-lg font-medium text-text mb-4 flex items-center gap-2">
+              <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+              </svg>
+              数据管理
+            </h2>
             <div className="space-y-3">
               <Button onClick={() => setShowCsvImport(true)} variant="secondary" className="w-full">
                 从 CSV 导入密码
@@ -249,8 +263,13 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <div className="bg-surface border border-danger/30 rounded-xl p-6">
-            <h2 className="text-lg font-medium text-danger mb-2">危险区域</h2>
+          <div className="bg-gradient-to-br from-danger/10 to-red-900/10 border border-danger/30 rounded-2xl p-6 shadow-lg">
+            <h2 className="text-lg font-medium text-danger mb-2 flex items-center gap-2">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              危险区域
+            </h2>
             <p className="text-sm text-textMuted mb-4">
               重置数据库将删除所有用户数据和密码，此操作不可恢复。
             </p>
