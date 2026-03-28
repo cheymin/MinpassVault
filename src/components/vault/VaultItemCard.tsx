@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { VaultItem, useVault } from '@/contexts/VaultContext'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
+import { Icon } from '@/components/ui/Icon'
 import { EditItemModal } from './EditItemModal'
 
 interface VaultItemCardProps {
@@ -18,10 +19,10 @@ export function VaultItemCard({ item }: VaultItemCardProps) {
   const [copied, setCopied] = useState<string | null>(null)
 
   const typeIcons: Record<string, string> = {
-    login: '🔑',
-    secure_note: '📝',
-    card: '💳',
-    identity: '👤',
+    login: 'key',
+    secure_note: 'file-lines',
+    card: 'credit-card',
+    identity: 'id-card',
   }
 
   const typeGradients: Record<string, string> = {
@@ -62,7 +63,7 @@ export function VaultItemCard({ item }: VaultItemCardProps) {
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br ${typeGradients[item.type]} flex items-center justify-center text-xl sm:text-2xl`}>
-              {typeIcons[item.type]}
+              <Icon name={typeIcons[item.type] as any} className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <div>
               <h3 className="font-medium text-text text-sm sm:text-base">{item.name}</h3>
@@ -77,7 +78,7 @@ export function VaultItemCard({ item }: VaultItemCardProps) {
               item.favorite ? 'text-warning scale-110' : 'text-textMuted opacity-0 group-hover:opacity-100 hover:scale-110'
             }`}
           >
-            {item.favorite ? '★' : '☆'}
+            <Icon name="star" className={item.favorite ? 'w-5 h-5' : 'w-5 h-5'} />
           </button>
         </div>
       </div>
@@ -86,9 +87,7 @@ export function VaultItemCard({ item }: VaultItemCardProps) {
         <div className="space-y-4">
           <div className="flex justify-end gap-2">
             <Button variant="ghost" size="sm" onClick={handleEdit}>
-              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
+              <Icon name="cog" className="w-4 h-4 mr-1" />
               编辑
             </Button>
           </div>

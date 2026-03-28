@@ -8,6 +8,7 @@ import { useToast } from '@/contexts/ToastContext'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Modal } from '@/components/ui/Modal'
+import { Icon } from '@/components/ui/Icon'
 import { resetDatabase } from '@/lib/init'
 
 export default function SettingsPage() {
@@ -20,6 +21,7 @@ export default function SettingsPage() {
   const [showReset, setShowReset] = useState(false)
   const [showCsvImport, setShowCsvImport] = useState(false)
   const [showSiteSettings, setShowSiteSettings] = useState(false)
+  const [showSmtpSettings, setShowSmtpSettings] = useState(false)
 
   const [oldPassword, setOldPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
@@ -35,10 +37,19 @@ export default function SettingsPage() {
   const [siteSettingsLoading, setSiteSettingsLoading] = useState(false)
   const [siteSettingsError, setSiteSettingsError] = useState('')
 
+  const [smtpHost, setSmtpHost] = useState('')
+  const [smtpPort, setSmtpPort] = useState('587')
+  const [smtpSecure, setSmtpSecure] = useState(false)
+  const [smtpUser, setSmtpUser] = useState('')
+  const [smtpPass, setSmtpPass] = useState('')
+  const [smtpFrom, setSmtpFrom] = useState('')
+  const [smtpSettingsLoading, setSmtpSettingsLoading] = useState(false)
+  const [smtpSettingsError, setSmtpSettingsError] = useState('')
+
   useEffect(() => {
     if (user) {
       setSiteTitle(user.siteTitle || 'SecureVault密码管理器')
-      setSiteIcon(user.siteIcon || 'https://djkl.qzz.io/file/1770081419896_头像.webp')
+      setSiteIcon(user.siteIcon || 'https://djkl.qzz.io/file/1.webp')
     }
   }, [user])
 
@@ -90,8 +101,6 @@ export default function SettingsPage() {
     if (!file) return
 
     setCsvLoading(true)
-    setCsvError('')
-    setCsvSuccess('')
 
     try {
       const text = await file.text()
@@ -161,6 +170,42 @@ export default function SettingsPage() {
     }
   }
 
+  const handleSmtpSettings = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSmtpSettingsError('')
+    setSmtpSettingsLoading(true)
+
+    try {
+      const response = await fetch('/api/smtp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          host: smtpHost,
+          port: parseInt(smtpPort),
+          secure: smtpSecure,
+          user: smtpUser,
+          pass: smtpPass,
+          from: smtpFrom,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setSmtpSettingsError(data.error || '保存失败')
+      } else {
+        showToast('SMTP 设置已保存', 'success')
+        setShowSmtpSettings(false)
+      }
+    } catch (err) {
+      setSmtpSettingsError('保存失败，请稍后重试')
+    } finally {
+      setSmtpSettingsLoading(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <header className="bg-surface border-b border-border sticky top-0 z-40">
@@ -171,9 +216,7 @@ export default function SettingsPage() {
                 onClick={() => router.push('/vault')}
                 className="flex items-center gap-2 text-textMuted hover:text-text"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
+                <Icon name="arrow-left" className="w-5 h-5" />
                 返回
               </button>
               <h1 className="text-lg font-semibold text-text">设置</h1>
@@ -186,9 +229,7 @@ export default function SettingsPage() {
         <div className="space-y-4 sm:space-y-6">
           <div className="bg-gradient-to-br from-surface to-surfaceHover border border-border rounded-2xl p-6 shadow-lg">
             <h2 className="text-lg font-medium text-text mb-4 flex items-center gap-2">
-              <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
+              <Icon name="user" className="w-5 h-5 text-primary" />
               账户信息
             </h2>
             <div className="space-y-3">
@@ -201,9 +242,7 @@ export default function SettingsPage() {
 
           <div className="bg-gradient-to-br from-surface to-surfaceHover border border-border rounded-2xl p-6 shadow-lg">
             <h2 className="text-lg font-medium text-text mb-4 flex items-center gap-2">
-              <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-              </svg>
+              <Icon name="globe" className="w-5 h-5 text-primary" />
               网站设置
             </h2>
             <div className="space-y-4">
@@ -218,12 +257,12 @@ export default function SettingsPage() {
                   <p className="text-text">网站图标</p>
                   <div className="flex items-center gap-2 mt-1">
                     <img 
-                      src={user?.siteIcon || 'https://djkl.qzz.io/file/1770081419896_头像.webp'} 
+                      src={user?.siteIcon || 'https://djkl.qzz.io/file/1.webp'} 
                       alt="网站图标" 
                       className="w-6 h-6 rounded"
                     />
                     <p className="text-sm text-textMuted truncate max-w-[200px]">
-                      {user?.siteIcon || 'https://djkl.qzz.io/file/1770081419896_头像.webp'}
+                      {user?.siteIcon || 'https://djkl.qzz.io/file/1.webp'}
                     </p>
                   </div>
                 </div>
@@ -236,9 +275,7 @@ export default function SettingsPage() {
 
           <div className="bg-gradient-to-br from-surface to-surfaceHover border border-border rounded-2xl p-6 shadow-lg">
             <h2 className="text-lg font-medium text-text mb-4 flex items-center gap-2">
-              <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
+              <Icon name="lock" className="w-5 h-5 text-primary" />
               安全设置
             </h2>
             <Button onClick={() => setShowChangePassword(true)} variant="secondary" className="w-full">
@@ -248,9 +285,20 @@ export default function SettingsPage() {
 
           <div className="bg-gradient-to-br from-surface to-surfaceHover border border-border rounded-2xl p-6 shadow-lg">
             <h2 className="text-lg font-medium text-text mb-4 flex items-center gap-2">
-              <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-              </svg>
+              <Icon name="envelope" className="w-5 h-5 text-primary" />
+              邮件设置
+            </h2>
+            <p className="text-sm text-textMuted mb-4">
+              配置 SMTP 邮件服务以支持密码重置和邮箱验证功能
+            </p>
+            <Button onClick={() => setShowSmtpSettings(true)} variant="secondary" className="w-full">
+              配置 SMTP 邮件
+            </Button>
+          </div>
+
+          <div className="bg-gradient-to-br from-surface to-surfaceHover border border-border rounded-2xl p-6 shadow-lg">
+            <h2 className="text-lg font-medium text-text mb-4 flex items-center gap-2">
+              <Icon name="database" className="w-5 h-5 text-primary" />
               数据管理
             </h2>
             <div className="space-y-3">
@@ -313,17 +361,82 @@ export default function SettingsPage() {
               {siteSettingsError}
             </div>
           )}
-          {siteSettingsSuccess && (
-            <div className="p-3 bg-success/10 border border-success/20 rounded-lg text-success text-sm">
-              {siteSettingsSuccess}
-            </div>
-          )}
           <div className="flex gap-3">
             <Button type="button" variant="secondary" onClick={() => setShowSiteSettings(false)} className="flex-1">
               取消
             </Button>
             <Button type="submit" className="flex-1" loading={siteSettingsLoading}>
               保存
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      <Modal isOpen={showSmtpSettings} onClose={() => setShowSmtpSettings(false)} title="SMTP 邮件配置" size="sm">
+        <form onSubmit={handleSmtpSettings} className="space-y-4">
+          <Input
+            type="text"
+            label="SMTP 服务器"
+            placeholder="例如: smtp.gmail.com"
+            value={smtpHost}
+            onChange={(e) => setSmtpHost(e.target.value)}
+            required
+          />
+          <Input
+            type="number"
+            label="端口"
+            placeholder="例如: 587"
+            value={smtpPort}
+            onChange={(e) => setSmtpPort(e.target.value)}
+            required
+          />
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="smtpSecure"
+              checked={smtpSecure}
+              onChange={(e) => setSmtpSecure(e.target.checked)}
+              className="w-4 h-4 rounded border-border bg-surface text-primary focus:ring-primary"
+            />
+            <label htmlFor="smtpSecure" className="text-sm text-text">
+              使用 SSL/TLS
+            </label>
+          </div>
+          <Input
+            type="text"
+            label="用户名"
+            placeholder="邮箱地址"
+            value={smtpUser}
+            onChange={(e) => setSmtpUser(e.target.value)}
+            required
+          />
+          <Input
+            type="password"
+            label="密码"
+            placeholder="邮箱密码或应用专用密码"
+            value={smtpPass}
+            onChange={(e) => setSmtpPass(e.target.value)}
+            required
+          />
+          <Input
+            type="email"
+            label="发件人地址"
+            placeholder="例如: noreply@securevault.com"
+            value={smtpFrom}
+            onChange={(e) => setSmtpFrom(e.target.value)}
+            required
+          />
+          {smtpSettingsError && (
+            <div className="p-3 bg-danger/10 border border-danger/20 rounded-lg text-danger text-sm">
+              {smtpSettingsError}
+            </div>
+          )}
+          <div className="flex gap-3">
+            <Button type="button" variant="secondary" onClick={() => setShowSmtpSettings(false)} className="flex-1">
+              取消
+            </Button>
+            <Button type="submit" className="flex-1" loading={smtpSettingsLoading}>
+              保存配置
             </Button>
           </div>
         </form>
@@ -360,11 +473,6 @@ export default function SettingsPage() {
               {passwordError}
             </div>
           )}
-          {passwordSuccess && (
-            <div className="p-3 bg-success/10 border border-success/20 rounded-lg text-success text-sm">
-              {passwordSuccess}
-            </div>
-          )}
           <div className="flex gap-3">
             <Button type="button" variant="secondary" onClick={() => setShowChangePassword(false)} className="flex-1">
               取消
@@ -396,16 +504,6 @@ export default function SettingsPage() {
               disabled={csvLoading}
             />
           </label>
-          {csvError && (
-            <div className="p-3 bg-danger/10 border border-danger/20 rounded-lg text-danger text-sm">
-              {csvError}
-            </div>
-          )}
-          {csvSuccess && (
-            <div className="p-3 bg-success/10 border border-success/20 rounded-lg text-success text-sm">
-              {csvSuccess}
-            </div>
-          )}
           <Button variant="secondary" onClick={() => setShowCsvImport(false)} className="w-full">
             关闭
           </Button>

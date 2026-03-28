@@ -8,7 +8,7 @@ export function DynamicHead() {
 
   useEffect(() => {
     const title = user?.siteTitle || 'SecureVault密码管理器'
-    const icon = user?.siteIcon || 'https://djkl.qzz.io/file/1770081419896_头像.webp'
+    const icon = user?.siteIcon || 'https://djkl.qzz.io/file/1.webp'
     
     document.title = title
     

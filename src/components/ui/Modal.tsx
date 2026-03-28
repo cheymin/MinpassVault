@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
+import { Icon } from '@/components/ui/Icon'
 
 interface ModalProps {
   isOpen: boolean
@@ -45,20 +46,18 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
       />
       <div
         ref={modalRef}
-        className={`relative bg-surface/95 backdrop-blur-xl border border-border rounded-2xl shadow-modal w-full ${sizes[size]} mx-auto max-h-[90vh] overflow-hidden animate-fade-in`}
+        className={`relative bg-gradient-to-br from-surface to-surfaceHover backdrop-blur-xl border border-border rounded-2xl shadow-2xl w-full ${sizes[size]} mx-auto max-h-[90vh] overflow-hidden animate-fade-in`}
       >
-        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-border/50 bg-surface/50">
-          <h2 className="text-base sm:text-lg font-semibold text-text">{title}</h2>
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-border/50 bg-gradient-to-r from-surface/50 to-surfaceHover/50">
+          <h2 className="text-base sm:text-lg font-semibold text-text bg-gradient-to-r from-text to-textMuted bg-clip-text text-transparent">{title}</h2>
           <button
             onClick={onClose}
-            className="text-textMuted hover:text-text transition-colors p-1 rounded-lg hover:bg-surface"
+            className="text-textMuted hover:text-danger transition-colors p-1 rounded-lg hover:bg-surface/50"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <Icon name="times" className="w-5 h-5" />
           </button>
         </div>
-        <div className="px-4 sm:px-6 py-4 overflow-y-auto max-h-[calc(90vh-80px)]">
+        <div className="px-4 sm:px-6 py-4 overflow-y-auto max-h-[calc(90vh-80px)] custom-scrollbar">
           {children}
         </div>
       </div>

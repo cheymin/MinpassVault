@@ -8,6 +8,7 @@ import { useToast } from '@/contexts/ToastContext'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Modal } from '@/components/ui/Modal'
+import { Icon } from '@/components/ui/Icon'
 import { AddItemModal } from '@/components/vault/AddItemModal'
 import { VaultItemCard } from '@/components/vault/VaultItemCard'
 import { PasswordGenerator } from '@/components/vault/PasswordGenerator'
@@ -31,6 +32,7 @@ export default function VaultPage() {
   const [showUnlockModal, setShowUnlockModal] = useState(false)
   const [unlockPassword, setUnlockPassword] = useState('')
   const [unlockError, setUnlockError] = useState('')
+  const [showMobileMenu, setShowMobileMenu] = useState(false)
 
   const filteredItems = useMemo(() => {
     return items.filter((item) => {
@@ -76,11 +78,11 @@ export default function VaultPage() {
   }
 
   const typeFilters: { value: VaultItemType | 'all'; label: string; icon: string }[] = [
-    { value: 'all', label: '全部', icon: '📁' },
-    { value: 'login', label: '登录凭证', icon: '🔑' },
-    { value: 'secure_note', label: '安全笔记', icon: '📝' },
-    { value: 'card', label: '银行卡', icon: '💳' },
-    { value: 'identity', label: '身份信息', icon: '👤' },
+    { value: 'all', label: '全部', icon: 'folder' },
+    { value: 'login', label: '登录凭证', icon: 'key' },
+    { value: 'secure_note', label: '安全笔记', icon: 'file-lines' },
+    { value: 'card', label: '银行卡', icon: 'credit-card' },
+    { value: 'identity', label: '身份信息', icon: 'id-card' },
   ]
 
   return (
@@ -91,7 +93,7 @@ export default function VaultPage() {
             <div className="flex items-center gap-2 sm:gap-4">
               <div className="flex items-center gap-2">
                 <img 
-                  src={user?.siteIcon || 'https://djkl.qzz.io/file/1770081419896_头像.webp'} 
+                  src={user?.siteIcon || 'https://djkl.qzz.io/file/1.webp'} 
                   alt="Logo" 
                   className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg"
                 />
@@ -100,50 +102,69 @@ export default function VaultPage() {
             </div>
 
             <div className="flex items-center gap-1 sm:gap-3">
-              <Button variant="ghost" size="sm" onClick={() => router.push('/settings')} className="hidden sm:flex">
-                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                <span className="hidden sm:inline">设置</span>
+              <Button variant="ghost" size="sm" onClick={() => setShowMobileMenu(!showMobileMenu)} className="sm:hidden">
+                <Icon name="bars" className="w-5 h-5" />
               </Button>
-              <Button variant="ghost" size="sm" onClick={() => setShowPasswordGen(true)} className="hidden sm:flex">
-                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-                </svg>
-                <span className="hidden sm:inline">密码生成器</span>
-              </Button>
-              <Button variant="ghost" size="sm" onClick={() => setShowImportExport(true)} className="hidden sm:flex">
-                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                </svg>
-                <span className="hidden sm:inline">导入/导出</span>
-              </Button>
-              <Button variant="ghost" size="sm" onClick={handleLock} className="hidden sm:flex">
-                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-                <span className="hidden sm:inline">锁定</span>
-              </Button>
-              <Button variant="ghost" size="sm" onClick={handleSignOut}>
-                <svg className="w-4 h-4 mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
-                <span className="hidden sm:inline">退出登录</span>
-              </Button>
+              <div className={`hidden sm:flex items-center gap-1 sm:gap-3 transition-all ${showMobileMenu ? 'flex' : ''}`}>
+                <Button variant="ghost" size="sm" onClick={() => router.push('/settings')}>
+                  <Icon name="cog" className="w-4 h-4 mr-1" />
+                  <span className="hidden sm:inline">设置</span>
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => setShowPasswordGen(true)}>
+                  <Icon name="key" className="w-4 h-4 mr-1" />
+                  <span className="hidden sm:inline">密码生成器</span>
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => setShowImportExport(true)}>
+                  <Icon name="download" className="w-4 h-4 mr-1" />
+                  <span className="hidden sm:inline">导入/导出</span>
+                </Button>
+                <Button variant="ghost" size="sm" onClick={handleLock}>
+                  <Icon name="lock" className="w-4 h-4 mr-1" />
+                  <span className="hidden sm:inline">锁定</span>
+                </Button>
+                <Button variant="ghost" size="sm" onClick={handleSignOut}>
+                  <Icon name="sign-out-alt" className="w-4 h-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">退出登录</span>
+                </Button>
+              </div>
             </div>
           </div>
         </div>
       </header>
+
+      {showMobileMenu && (
+        <div className="sm:hidden fixed top-16 left-0 right-0 bg-surface border-b border-border z-30 animate-fade-in">
+          <div className="px-4 py-3 space-y-2">
+            <Button variant="ghost" size="sm" onClick={() => { router.push('/settings'); setShowMobileMenu(false) }} className="w-full justify-start">
+              <Icon name="cog" className="w-4 h-4 mr-2" />
+              设置
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => { setShowPasswordGen(true); setShowMobileMenu(false) }} className="w-full justify-start">
+              <Icon name="key" className="w-4 h-4 mr-2" />
+              密码生成器
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => { setShowImportExport(true); setShowMobileMenu(false) }} className="w-full justify-start">
+              <Icon name="download" className="w-4 h-4 mr-2" />
+              导入/导出
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => { handleLock(); setShowMobileMenu(false) }} className="w-full justify-start">
+              <Icon name="lock" className="w-4 h-4 mr-2" />
+              锁定
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => { handleSignOut(); setShowMobileMenu(false) }} className="w-full justify-start">
+              <Icon name="sign-out-alt" className="w-4 h-4 mr-2" />
+              退出登录
+            </Button>
+          </div>
+        </div>
+      )}
 
       <div className="max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-6">
         <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
           <aside className="w-full lg:w-64 shrink-0">
             <div className="bg-surface border border-border rounded-xl p-3 sm:p-4 sticky top-20 lg:top-24">
               <Button onClick={() => setShowAddModal(true)} className="w-full mb-3 sm:mb-4">
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
+                <Icon name="plus" className="w-4 h-4 mr-2" />
                 添加项目
               </Button>
 
@@ -158,7 +179,7 @@ export default function VaultPage() {
                         : 'text-textMuted hover:bg-surfaceHover hover:text-text'
                     }`}
                   >
-                    <span>{filter.icon}</span>
+                    <Icon name={filter.icon as any} className="w-4 h-4" />
                     <span className="text-xs sm:text-sm">{filter.label}</span>
                     <span className="ml-auto text-xs text-textMuted">
                       {filter.value === 'all' ? items.length : items.filter((i) => i.type === filter.value).length}
@@ -174,9 +195,7 @@ export default function VaultPage() {
                     onClick={() => setShowFolderModal(true)}
                     className="text-textMuted hover:text-text"
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                    </svg>
+                    <Icon name="plus" className="w-4 h-4" />
                   </button>
                 </div>
                 <div className="space-y-1">
@@ -188,7 +207,7 @@ export default function VaultPage() {
                         : 'text-textMuted hover:bg-surfaceHover hover:text-text'
                     }`}
                   >
-                    <span>📁</span>
+                    <Icon name="folder" className="w-4 h-4" />
                     <span className="text-xs sm:text-sm">全部项目</span>
                   </button>
                   {folders.map((folder) => (
@@ -201,7 +220,7 @@ export default function VaultPage() {
                           : 'text-textMuted hover:bg-surfaceHover hover:text-text'
                       }`}
                     >
-                      <span>📁</span>
+                      <Icon name="folder" className="w-4 h-4" />
                       <span className="text-xs sm:text-sm flex-1 truncate">{folder.name}</span>
                       <button
                         onClick={(e) => {
@@ -210,9 +229,7 @@ export default function VaultPage() {
                         }}
                         className="opacity-0 group-hover:opacity-100 text-textMuted hover:text-danger"
                       >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
+                        <Icon name="trash" className="w-4 h-4" />
                       </button>
                     </button>
                   ))}
@@ -228,11 +245,7 @@ export default function VaultPage() {
                 placeholder="搜索保险库..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                icon={
-                  <svg className="w-4 sm:w-5 h-4 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                }
+                icon={<Icon name="search" className="w-4 sm:w-5 h-4 sm:h-5" />}
               />
             </div>
 
@@ -243,18 +256,14 @@ export default function VaultPage() {
             ) : filteredItems.length === 0 ? (
               <div className="text-center py-12">
                 <div className="w-14 h-14 sm:w-16 sm:h-16 bg-surface rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-6 h-6 sm:w-8 sm:h-8 text-textMuted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-                  </svg>
+                  <Icon name="search" className="w-6 h-6 sm:w-8 sm:h-8 text-textMuted" />
                 </div>
                 <h3 className="text-base sm:text-lg font-medium text-text mb-1">未找到项目</h3>
                 <p className="text-sm sm:text-base text-textMuted mb-4">
                   {search ? '请尝试其他搜索词' : '添加您的第一个项目开始使用'}
                 </p>
                 <Button onClick={() => setShowAddModal(true)}>
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
+                  <Icon name="plus" className="w-4 h-4 mr-2" />
                   添加项目
                 </Button>
               </div>

@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/contexts/ToastContext'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { Icon } from '@/components/ui/Icon'
 
 export function InitForm() {
   const [username, setUsername] = useState('')
@@ -13,6 +14,9 @@ export function InitForm() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showDbConfig, setShowDbConfig] = useState(false)
+  const [dbUrl, setDbUrl] = useState('')
+  const [dbAnonKey, setDbAnonKey] = useState('')
   const { signUp } = useAuth()
   const { showToast } = useToast()
   const router = useRouter()
@@ -36,7 +40,18 @@ export function InitForm() {
       return
     }
 
+    if (showDbConfig && (!dbUrl || !dbAnonKey)) {
+      setError('请填写完整的数据库配置')
+      return
+    }
+
     setLoading(true)
+    
+    if (showDbConfig) {
+      localStorage.setItem('NEXT_PUBLIC_SUPABASE_URL', dbUrl)
+      localStorage.setItem('NEXT_PUBLIC_SUPABASE_ANON_KEY', dbAnonKey)
+    }
+    
     const result = await signUp(username, password)
     setLoading(false)
 
@@ -53,9 +68,7 @@ export function InitForm() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-primary/20 to-primaryLight/20 rounded-2xl mb-4 animate-fade-in">
-            <svg className="w-8 h-8 sm:w-10 sm:h-10 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
+            <Icon name="lock" className="w-8 h-8 sm:w-10 sm:h-10 text-primary" />
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold text-text mb-2 bg-gradient-to-r from-text to-textMuted bg-clip-text text-transparent">SecureVault</h1>
           <p className="text-sm sm:text-base text-textMuted">首次使用，请创建管理员账户</p>
@@ -70,11 +83,7 @@ export function InitForm() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              icon={
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-              }
+              icon={<Icon name="user" className="w-5 h-5" />}
             />
             <Input
               type="password"
@@ -83,11 +92,7 @@ export function InitForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              icon={
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-              }
+              icon={<Icon name="lock" className="w-5 h-5" />}
             />
             <Input
               type="password"
@@ -102,6 +107,41 @@ export function InitForm() {
                 </svg>
               }
             />
+
+            <div className="pt-2 border-t border-border">
+              <button
+                type="button"
+                onClick={() => setShowDbConfig(!showDbConfig)}
+                className="flex items-center gap-2 text-sm text-primary hover:text-primaryLight transition-colors"
+              >
+                <Icon name="database" className="w-4 h-4" />
+                {showDbConfig ? '隐藏数据库配置' : '配置数据库'}
+              </button>
+            </div>
+
+            {showDbConfig && (
+              <div className="space-y-4 pt-4 border-t border-border animate-fade-in">
+                <p className="text-xs text-textMuted">
+                  如果您有自己的 Supabase 数据库，可以在此配置。否则将使用默认配置。
+                </p>
+                <Input
+                  type="url"
+                  label="数据库 URL"
+                  placeholder="https://xxx.supabase.co"
+                  value={dbUrl}
+                  onChange={(e) => setDbUrl(e.target.value)}
+                  icon={<Icon name="globe" className="w-5 h-5" />}
+                />
+                <Input
+                  type="text"
+                  label="匿名密钥"
+                  placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                  value={dbAnonKey}
+                  onChange={(e) => setDbAnonKey(e.target.value)}
+                  icon={<Icon name="key" className="w-5 h-5" />}
+                />
+              </div>
+            )}
 
             {error && (
               <div className="p-3 bg-danger/10 border border-danger/20 rounded-lg text-danger text-sm animate-fade-in">

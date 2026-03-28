@@ -1,7 +1,22 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key'
+const getSupabaseConfig = () => {
+  if (typeof window !== 'undefined') {
+    const localUrl = localStorage.getItem('NEXT_PUBLIC_SUPABASE_URL')
+    const localKey = localStorage.getItem('NEXT_PUBLIC_SUPABASE_ANON_KEY')
+    
+    if (localUrl && localKey) {
+      return { url: localUrl, key: localKey }
+    }
+  }
+  
+  return {
+    url: process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
+    key: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key'
+  }
+}
+
+const { url: supabaseUrl, key: supabaseAnonKey } = getSupabaseConfig()
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 

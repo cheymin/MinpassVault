@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/contexts/ToastContext'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { Icon } from '@/components/ui/Icon'
 
 const MAX_ATTEMPTS = 5
 const LOCKOUT_TIME = 15 * 60 * 1000
@@ -138,11 +139,7 @@ export function LoginForm() {
               onChange={(e) => setUsername(e.target.value)}
               required
               disabled={isLocked}
-              icon={
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-              }
+              icon={<Icon name="user" className="w-5 h-5" />}
             />
             <Input
               type="password"
@@ -152,15 +149,12 @@ export function LoginForm() {
               onChange={(e) => setPassword(e.target.value)}
               required
               disabled={isLocked}
-              icon={
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-              }
+              icon={<Icon name="lock" className="w-5 h-5" />}
             />
             {loginAttempts > 0 && !isLocked && (
               <div className="text-xs text-warning">
-                ⚠️ 登录失败 {loginAttempts} 次，{MAX_ATTEMPTS - loginAttempts} 次后将被锁定 15 分钟
+                <Icon name="shield" className="w-3 h-3 mr-1" />
+                登录失败 {loginAttempts} 次，{MAX_ATTEMPTS - loginAttempts} 次后将被锁定 15 分钟
               </div>
             )}
           </>
@@ -173,11 +167,7 @@ export function LoginForm() {
             onChange={(e) => setTwoFactorCode(e.target.value)}
             required
             maxLength={6}
-            icon={
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-              </svg>
-            }
+            icon={<Icon name="shield" className="w-5 h-5" />}
           />
         )}
 
@@ -201,6 +191,23 @@ export function LoginForm() {
         >
           {requires2FA ? '验证' : '登录'}
         </Button>
+
+        <div className="mt-4 text-center">
+          <button
+            type="button"
+            onClick={() => {
+              const username = (document.querySelector('input[type="text"]') as HTMLInputElement)?.value
+              if (username) {
+                window.location.href = `/forgot-password?username=${encodeURIComponent(username)}`
+              } else {
+                window.location.href = '/forgot-password'
+              }
+            }}
+            className="text-sm text-textMuted hover:text-primary transition-colors"
+          >
+            忘记密码？
+          </button>
+        </div>
       </form>
     </div>
   )
