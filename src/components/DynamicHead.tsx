@@ -2,6 +2,11 @@
 
 import { useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
+import CryptoJS from 'crypto-js'
+
+if (typeof window !== 'undefined') {
+  (window as any).CryptoJS = CryptoJS
+}
 
 export function DynamicHead() {
   const { user } = useAuth()
