@@ -294,6 +294,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { error: updateError.message }
       }
 
+      setMasterKey(decryptedMasterKey)
+      localStorage.setItem('masterKey', decryptedMasterKey)
+
       return { error: null }
     } catch (err) {
       return { error: '更改密码失败' }

@@ -12,7 +12,7 @@ export function DynamicHead() {
   const { user } = useAuth()
 
   useEffect(() => {
-    const title = user?.siteTitle || 'SecureVault密码管理器'
+    const title = user?.siteTitle || 'SecureVault'
     const icon = user?.siteIcon || 'https://djkl.qzz.io/file/1.webp'
     
     document.title = title

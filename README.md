@@ -20,15 +20,14 @@
 - 🔐 **登录保护** - 5次失败后锁定15分钟
 - ⏰ **会话管理** - 15分钟登录时效，增强安全性
 
-### 新增功能 (v2.1)
+### 新增功能 (v2.3)
 - 📱 **响应式设计** - 完美适配移动设备，支持各种屏幕尺寸
 - 🎨 **UI 全面美化** - 渐变背景、发光效果、动画过渡、现代化设计
 - 🎨 **Font Awesome 图标** - 使用专业图标库替换 emoji，提升视觉一致性
 - 📱 **手机端汉堡菜单** - 移动端添加三横线菜单，访问所有功能
-- 🔌 **RESTful API** - 提供 API 接口，支持第三方应用集成
-- 📧 **SMTP 邮件功能** - 支持发送验证码和密码重置邮件
+- � **邮件功能** - 支持 SMTP 和 Resend 两种邮件服务，用于密码重置
 - 🔑 **忘记密码** - 用户可以通过邮箱重置密码
-- ⚙️ **可视化配置** - 在设置中配置 SMTP，在初始化时配置数据库
+- ⚙️ **可视化配置** - 所有配置在界面中完成，无需配置环境变量
 - 🔔 **提示弹窗系统** - 操作成功/失败时显示美观的通知提示
 
 ### 个性化设置
@@ -103,17 +102,11 @@ npm run dev
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 
-# SMTP 邮件配置（可选，用于密码重置功能）
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_SECURE=false
-SMTP_USER=your-email@gmail.com
-SMTP_PASS=your-app-password
-SMTP_FROM=noreply@securevault.com
-
 # 应用配置
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
+
+**注意**：SMTP 和 Resend 邮件配置可在设置页面中直接配置，无需设置环境变量。
 
 ### 数据库配置
 
@@ -207,13 +200,16 @@ CREATE TRIGGER update_vault_items_updated_at
   EXECUTE FUNCTION update_updated_at_column();
 ```
 
-### SMTP 邮件配置（可选）
+### 邮件配置（可选）
 
-在设置页面中配置 SMTP 邮件服务：
+在设置页面中配置邮件服务，支持两种方式：
+
+#### 方式 1：SMTP 配置
 
 1. 进入设置页面
-2. 点击"配置 SMTP 邮件"
-3. 填写以下信息：
+2. 点击"配置邮件服务"
+3. 选择"SMTP"类型
+4. 填写以下信息：
    - SMTP 服务器（如：smtp.gmail.com）
    - 端口（如：587）
    - 是否使用 SSL/TLS
@@ -224,6 +220,22 @@ CREATE TRIGGER update_vault_items_updated_at
 **Gmail 用户注意**：
 - 需要开启两步验证
 - 生成应用专用密码（不是登录密码）
+
+#### 方式 2：Resend 配置（推荐）
+
+[Resend](https://resend.com) 是一个现代化的邮件 API 服务，配置更简单：
+
+1. 注册 [Resend](https://resend.com) 账号
+2. 获取 API Key
+3. 进入设置页面
+4. 点击"配置邮件服务"
+5. 选择"Resend"类型
+6. 填写 API Key 和发件人地址
+
+**Resend 优势**：
+- 免费额度充足（每月 3000 封）
+- 配置简单，无需 SMTP 服务器
+- 发送成功率高
 
 ## 🔐 安全架构
 
@@ -245,17 +257,6 @@ CREATE TRIGGER update_vault_items_updated_at
 | 图标 | Font Awesome |
 | 邮件 | Nodemailer |
 | 部署 | Vercel |
-
-## 📚 API 文档
-
-完整的 API 文档请查看 [API.md](./API.md)。
-
-### 主要端点
-
-- `GET /api/health` - 健康检查
-- `GET /api/vault` - 获取保险库项目
-- `POST /api/vault` - 创建保险库项目
-- `POST /api/email` - 发送邮件（验证码/重置密码）
 
 ## 🎯 使用说明
 
