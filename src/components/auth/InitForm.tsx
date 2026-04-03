@@ -1,0 +1,184 @@
+'use client'
+
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/contexts/AuthContext'
+import { useToast } from '@/contexts/ToastContext'
+import { Button } from '@/components/ui/Button'
+import { Input } from '@/components/ui/Input'
+import { Icon } from '@/components/ui/Icon'
+
+export function InitForm() {
+  const [username, setUsername] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [showDbConfig, setShowDbConfig] = useState(false)
+  const [dbUrl, setDbUrl] = useState('')
+  const [dbAnonKey, setDbAnonKey] = useState('')
+  const { signUp } = useAuth()
+  const { showToast } = useToast()
+  const router = useRouter()
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+
+    if (password !== confirmPassword) {
+      setError('两次密码不一致')
+      return
+    }
+
+    if (password.length < 8) {
+      setError('密码至少需要8个字符')
+      return
+    }
+
+    if (username.length < 3) {
+      setError('用户名至少需要3个字符')
+      return
+    }
+
+    if (!email || !email.includes('@')) {
+      setError('请输入有效的邮箱地址')
+      return
+    }
+
+    if (showDbConfig && (!dbUrl || !dbAnonKey)) {
+      setError('请填写完整的数据库配置')
+      return
+    }
+
+    setLoading(true)
+    
+    if (showDbConfig) {
+      localStorage.setItem('NEXT_PUBLIC_SUPABASE_URL', dbUrl)
+      localStorage.setItem('NEXT_PUBLIC_SUPABASE_ANON_KEY', dbAnonKey)
+    }
+    
+    const result = await signUp(username, password, email)
+    setLoading(false)
+
+    if (result.error) {
+      setError(result.error)
+    } else {
+      showToast('系统初始化成功', 'success')
+      router.push('/vault')
+    }
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center p-4 sm:p-8">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-primary/20 to-primaryLight/20 rounded-2xl mb-4 animate-fade-in">
+            <Icon name="lock" className="w-8 h-8 sm:w-10 sm:h-10 text-primary" />
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-text mb-2 bg-gradient-to-r from-text to-textMuted bg-clip-text text-transparent">SecureVault</h1>
+          <p className="text-sm sm:text-base text-textMuted">首次使用，请创建管理员账户</p>
+        </div>
+
+        <div className="bg-gradient-to-br from-surface to-surfaceHover border border-border rounded-2xl p-6 shadow-lg">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <Input
+              type="text"
+              label="用户名"
+              placeholder="请输入用户名"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              icon={<Icon name="user" className="w-5 h-5" />}
+            />
+            <div>
+              <Input
+                type="email"
+                label="邮箱地址"
+                placeholder="请输入邮箱地址"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                icon={<Icon name="envelope" className="w-5 h-5" />}
+              />
+              <p className="text-xs text-warning mt-1">
+                ⚠️ 请填写真实有效的邮箱，用于密码重置和账户恢复
+              </p>
+            </div>
+            <Input
+              type="password"
+              label="主密码"
+              placeholder="创建主密码"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              icon={<Icon name="lock" className="w-5 h-5" />}
+            />
+            <Input
+              type="password"
+              label="确认主密码"
+              placeholder="再次输入主密码"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              icon={
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              }
+            />
+
+            <div className="pt-2 border-t border-border">
+              <button
+                type="button"
+                onClick={() => setShowDbConfig(!showDbConfig)}
+                className="flex items-center gap-2 text-sm text-primary hover:text-primaryLight transition-colors"
+              >
+                <Icon name="database" className="w-4 h-4" />
+                {showDbConfig ? '隐藏数据库配置' : '配置数据库'}
+              </button>
+            </div>
+
+            {showDbConfig && (
+              <div className="space-y-4 pt-4 border-t border-border animate-fade-in">
+                <p className="text-xs text-textMuted">
+                  如果您有自己的 Supabase 数据库，可以在此配置。否则将使用默认配置。
+                </p>
+                <Input
+                  type="url"
+                  label="数据库 URL"
+                  placeholder="https://xxx.supabase.co"
+                  value={dbUrl}
+                  onChange={(e) => setDbUrl(e.target.value)}
+                  icon={<Icon name="globe" className="w-5 h-5" />}
+                />
+                <Input
+                  type="text"
+                  label="匿名密钥"
+                  placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                  value={dbAnonKey}
+                  onChange={(e) => setDbAnonKey(e.target.value)}
+                  icon={<Icon name="key" className="w-5 h-5" />}
+                />
+              </div>
+            )}
+
+            {error && (
+              <div className="p-3 bg-danger/10 border border-danger/20 rounded-lg text-danger text-sm animate-fade-in">
+                {error}
+              </div>
+            )}
+
+            <Button type="submit" className="w-full" loading={loading}>
+              初始化系统
+            </Button>
+          </form>
+        </div>
+
+        <p className="text-center text-xs text-textMuted mt-6">
+          此账户将作为系统唯一的管理员账户，请妥善保管主密码。
+        </p>
+      </div>
+    </div>
+  )
+}
