@@ -14,7 +14,7 @@ import { generateTOTPSecret, verifyTOTP } from '@/lib/totp'
 import { supabase } from '@/lib/supabase'
 
 export default function SettingsPage() {
-  const { user, signOut, changePassword, updateSiteSettings } = useAuth()
+  const { user, signOut, changePassword, updateSiteSettings, updateEmail, enableEmailVerification, disableEmailVerification } = useAuth()
   const { items, addItem } = useVault()
   const { showToast } = useToast()
   const router = useRouter()
@@ -25,6 +25,8 @@ export default function SettingsPage() {
   const [showSiteSettings, setShowSiteSettings] = useState(false)
   const [showSmtpSettings, setShowSmtpSettings] = useState(false)
   const [show2FASettings, setShow2FASettings] = useState(false)
+  const [showEmailSettings, setShowEmailSettings] = useState(false)
+  const [showEmailVerificationSettings, setShowEmailVerificationSettings] = useState(false)
 
   const [oldPassword, setOldPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
@@ -60,11 +62,18 @@ export default function SettingsPage() {
   const [twoFactorError, setTwoFactorError] = useState('')
   const [twoFactorStep, setTwoFactorStep] = useState<'setup' | 'verify' | 'disable'>('setup')
 
+  const [email, setEmail] = useState('')
+  const [emailVerificationEnabled, setEmailVerificationEnabled] = useState(false)
+  const [emailVerificationLoading, setEmailVerificationLoading] = useState(false)
+  const [emailVerificationError, setEmailVerificationError] = useState('')
+
   useEffect(() => {
     if (user) {
       setSiteTitle(user.siteTitle || 'SecureVault密码管理器')
       setSiteIcon(user.siteIcon || 'https://djkl.qzz.io/file/1.webp')
       setTwoFactorEnabled(user.twoFactorEnabled || false)
+      setEmail(user.email || '')
+      setEmailVerificationEnabled(user.emailVerificationEnabled || false)
     }
   }, [user])
 
@@ -325,6 +334,50 @@ export default function SettingsPage() {
     }
   }
 
+  const handleUpdateEmail = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setEmailVerificationError('')
+    setEmailVerificationLoading(true)
+
+    const result = await updateEmail(email)
+    setEmailVerificationLoading(false)
+
+    if (result.error) {
+      setEmailVerificationError(result.error)
+    } else {
+      showToast('邮箱已更新', 'success')
+      setShowEmailSettings(false)
+    }
+  }
+
+  const handleEnableEmailVerification = async () => {
+    setEmailVerificationLoading(true)
+    const result = await enableEmailVerification()
+    setEmailVerificationLoading(false)
+
+    if (result.error) {
+      showToast(result.error, 'error')
+    } else {
+      setEmailVerificationEnabled(true)
+      showToast('邮箱验证登录已启用', 'success')
+      setShowEmailVerificationSettings(false)
+    }
+  }
+
+  const handleDisableEmailVerification = async () => {
+    setEmailVerificationLoading(true)
+    const result = await disableEmailVerification()
+    setEmailVerificationLoading(false)
+
+    if (result.error) {
+      showToast(result.error, 'error')
+    } else {
+      setEmailVerificationEnabled(false)
+      showToast('邮箱验证登录已禁用', 'success')
+      setShowEmailVerificationSettings(false)
+    }
+  }
+
   const handleDisable2FA = async (e: React.FormEvent) => {
     e.preventDefault()
     setTwoFactorError('')
@@ -410,6 +463,13 @@ export default function SettingsPage() {
                 <span className="text-textMuted">用户名</span>
                 <span className="text-text font-medium">{user?.username}</span>
               </div>
+              <div className="flex justify-between items-center p-3 bg-background/50 rounded-lg">
+                <span className="text-textMuted">邮箱</span>
+                <span className="text-text font-medium">{user?.email || '未设置'}</span>
+              </div>
+              <Button onClick={() => setShowEmailSettings(true)} variant="secondary" className="w-full mt-2">
+                设置邮箱
+              </Button>
             </div>
           </div>
 
@@ -475,6 +535,22 @@ export default function SettingsPage() {
                 className="w-full"
               >
                 {twoFactorEnabled ? '管理两步验证' : '启用两步验证'}
+              </Button>
+              <div className="flex justify-between items-center p-3 bg-background/50 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <Icon name="envelope" className="w-4 h-4 text-textMuted" />
+                  <span className="text-sm text-text">邮箱验证登录</span>
+                </div>
+                <span className={`text-sm ${emailVerificationEnabled ? 'text-success' : 'text-textMuted'}`}>
+                  {emailVerificationEnabled ? '已启用' : '未启用'}
+                </span>
+              </div>
+              <Button 
+                onClick={() => setShowEmailVerificationSettings(true)} 
+                variant="secondary" 
+                className="w-full"
+              >
+                {emailVerificationEnabled ? '管理邮箱验证' : '启用邮箱验证'}
               </Button>
             </div>
           </div>
@@ -898,6 +974,94 @@ export default function SettingsPage() {
             </div>
           </form>
         )}
+      </Modal>
+
+      <Modal isOpen={showEmailSettings} onClose={() => setShowEmailSettings(false)} title="设置邮箱" size="sm">
+        <form onSubmit={handleUpdateEmail} className="space-y-4">
+          <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg text-sm">
+            <p className="text-text">邮箱用于密码重置和邮箱验证登录功能</p>
+          </div>
+          <Input
+            type="email"
+            label="邮箱地址"
+            placeholder="请输入邮箱地址"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          {emailVerificationError && (
+            <div className="p-3 bg-danger/10 border border-danger/20 rounded-lg text-danger text-sm">
+              {emailVerificationError}
+            </div>
+          )}
+          <div className="flex gap-3">
+            <Button type="button" variant="secondary" onClick={() => setShowEmailSettings(false)} className="flex-1">
+              取消
+            </Button>
+            <Button type="submit" className="flex-1" loading={emailVerificationLoading}>
+              保存
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      <Modal 
+        isOpen={showEmailVerificationSettings} 
+        onClose={() => setShowEmailVerificationSettings(false)} 
+        title={emailVerificationEnabled ? '管理邮箱验证登录' : '启用邮箱验证登录'} 
+        size="sm"
+      >
+        <div className="space-y-4">
+          {!emailVerificationEnabled ? (
+            <>
+              <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg">
+                <p className="text-sm text-text mb-2">
+                  启用邮箱验证登录后，每次登录时将向您的邮箱发送验证码，提供额外的安全保护。
+                </p>
+                <p className="text-xs text-textMuted">
+                  注意：需要先设置邮箱地址并配置邮件服务
+                </p>
+              </div>
+              {!user?.email && (
+                <div className="p-3 bg-warning/10 border border-warning/20 rounded-lg text-sm text-warning">
+                  请先在账户信息中设置邮箱地址
+                </div>
+              )}
+              <Button 
+                onClick={handleEnableEmailVerification} 
+                className="w-full" 
+                loading={emailVerificationLoading}
+                disabled={!user?.email}
+              >
+                启用邮箱验证登录
+              </Button>
+            </>
+          ) : (
+            <>
+              <div className="p-4 bg-success/10 border border-success/20 rounded-lg">
+                <p className="text-sm text-text">
+                  邮箱验证登录已启用。每次登录时，系统将向您的邮箱发送验证码。
+                </p>
+              </div>
+              <div className="p-3 bg-warning/10 border border-warning/20 rounded-lg">
+                <p className="text-sm text-textMuted">
+                  禁用后，登录时将不再需要邮箱验证码。
+                </p>
+              </div>
+              <Button 
+                variant="danger" 
+                onClick={handleDisableEmailVerification} 
+                className="w-full" 
+                loading={emailVerificationLoading}
+              >
+                禁用邮箱验证登录
+              </Button>
+            </>
+          )}
+          <Button variant="secondary" onClick={() => setShowEmailVerificationSettings(false)} className="w-full">
+            关闭
+          </Button>
+        </div>
       </Modal>
     </div>
   )

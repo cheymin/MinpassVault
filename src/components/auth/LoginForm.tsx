@@ -11,14 +11,19 @@ import { Icon } from '@/components/ui/Icon'
 const MAX_ATTEMPTS = 5
 const LOCKOUT_TIME = 15 * 60 * 1000
 
+type VerificationStep = 'credentials' | '2fa' | 'email'
+
 export function LoginForm() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [twoFactorCode, setTwoFactorCode] = useState('')
+  const [emailCode, setEmailCode] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [requires2FA, setRequires2FA] = useState(false)
-  const { signIn, verify2FA } = useAuth()
+  const [verificationStep, setVerificationStep] = useState<VerificationStep>('credentials')
+  const [sendingCode, setSendingCode] = useState(false)
+  const [codeSent, setCodeSent] = useState(false)
+  const { signIn, verify2FA, verifyEmailLogin, sendLoginVerificationCode } = useAuth()
   const { showToast } = useToast()
   const router = useRouter()
 
@@ -87,6 +92,22 @@ export function LoginForm() {
     return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
+  const handleSendEmailCode = async () => {
+    setSendingCode(true)
+    setError('')
+    
+    const result = await sendLoginVerificationCode()
+    setSendingCode(false)
+    
+    if (result.error) {
+      setError(result.error)
+      showToast(result.error, 'error')
+    } else {
+      setCodeSent(true)
+      showToast('验证码已发送到您的邮箱', 'success')
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
@@ -98,8 +119,19 @@ export function LoginForm() {
 
     setLoading(true)
 
-    if (requires2FA) {
+    if (verificationStep === '2fa') {
       const result = await verify2FA(twoFactorCode)
+      setLoading(false)
+      if (result.error) {
+        setError(result.error)
+        showToast(result.error, 'error')
+      } else {
+        handleSuccessfulLogin()
+        showToast('登录成功', 'success')
+        router.push('/vault')
+      }
+    } else if (verificationStep === 'email') {
+      const result = await verifyEmailLogin(emailCode)
       setLoading(false)
       if (result.error) {
         setError(result.error)
@@ -117,7 +149,10 @@ export function LoginForm() {
         showToast(result.error, 'error')
         handleFailedAttempt()
       } else if (result.requires2FA) {
-        setRequires2FA(true)
+        setVerificationStep('2fa')
+      } else if (result.requiresEmailVerification) {
+        setVerificationStep('email')
+        handleSendEmailCode()
       } else {
         handleSuccessfulLogin()
         showToast('登录成功', 'success')
@@ -131,7 +166,7 @@ export function LoginForm() {
   return (
     <div className="bg-surface border border-border rounded-xl p-6">
       <form onSubmit={handleSubmit} className="space-y-4">
-        {!requires2FA ? (
+        {verificationStep === 'credentials' ? (
           <>
             <Input
               type="text"
@@ -160,7 +195,7 @@ export function LoginForm() {
               </div>
             )}
           </>
-        ) : (
+        ) : verificationStep === '2fa' ? (
           <Input
             type="text"
             label="两步验证码"
@@ -171,6 +206,34 @@ export function LoginForm() {
             maxLength={6}
             icon={<Icon name="shield" className="w-5 h-5" />}
           />
+        ) : (
+          <>
+            <div className="text-center mb-4">
+              <Icon name="envelope" className="w-12 h-12 mx-auto text-primary mb-2" />
+              <p className="text-sm text-textMuted">验证码已发送到您的邮箱</p>
+            </div>
+            <Input
+              type="text"
+              label="邮箱验证码"
+              placeholder="请输入6位验证码"
+              value={emailCode}
+              onChange={(e) => setEmailCode(e.target.value)}
+              required
+              maxLength={6}
+              icon={<Icon name="envelope" className="w-5 h-5" />}
+            />
+            <div className="flex justify-between items-center">
+              <button
+                type="button"
+                onClick={handleSendEmailCode}
+                disabled={sendingCode || codeSent}
+                className="text-sm text-primary hover:text-primaryLight transition-colors disabled:opacity-50"
+              >
+                {sendingCode ? '发送中...' : codeSent ? '验证码已发送' : '重新发送验证码'}
+              </button>
+              <span className="text-xs text-textMuted">有效期10分钟</span>
+            </div>
+          </>
         )}
 
         {error && (
@@ -191,16 +254,33 @@ export function LoginForm() {
           loading={loading}
           disabled={isLocked}
         >
-          {requires2FA ? '验证' : '登录'}
+          {verificationStep === 'credentials' ? '登录' : '验证'}
         </Button>
+
+        {verificationStep !== 'credentials' && (
+          <Button
+            type="button"
+            variant="secondary"
+            className="w-full"
+            onClick={() => {
+              setVerificationStep('credentials')
+              setTwoFactorCode('')
+              setEmailCode('')
+              setCodeSent(false)
+              setError('')
+            }}
+          >
+            返回登录
+          </Button>
+        )}
 
         <div className="mt-4 text-center">
           <button
             type="button"
             onClick={() => {
-              const username = (document.querySelector('input[type="text"]') as HTMLInputElement)?.value
-              if (username) {
-                window.location.href = `/forgot-password?username=${encodeURIComponent(username)}`
+              const usernameInput = (document.querySelector('input[type="text"]') as HTMLInputElement)?.value
+              if (usernameInput) {
+                window.location.href = `/forgot-password?username=${encodeURIComponent(usernameInput)}`
               } else {
                 window.location.href = '/forgot-password'
               }
