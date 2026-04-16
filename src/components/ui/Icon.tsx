@@ -21,6 +21,7 @@ import {
   faTimes, 
   faArrowLeft, 
   faShield, 
+  faShieldAlt,
   faDatabase, 
   faEnvelope, 
   faBars,
@@ -29,7 +30,15 @@ import {
   faIdCard,
   faPhone,
   faMapMarkerAlt,
-  faSignOutAlt
+  faSignOutAlt,
+  faFilter,
+  faSpinner,
+  faInbox,
+  faHistory,
+  faChartPie,
+  faEdit,
+  faInfo,
+  faCube
 } from '@fortawesome/free-solid-svg-icons'
 
 export type IconName = 
@@ -52,6 +61,7 @@ export type IconName =
   | 'times' 
   | 'arrow-left' 
   | 'shield' 
+  | 'shield-alt'
   | 'database' 
   | 'envelope' 
   | 'bars'
@@ -61,6 +71,14 @@ export type IconName =
   | 'phone'
   | 'map-marker-alt'
   | 'sign-out-alt'
+  | 'filter'
+  | 'spinner'
+  | 'inbox'
+  | 'history'
+  | 'chart-pie'
+  | 'edit'
+  | 'info'
+  | 'cube'
 
 interface IconProps {
   name: IconName
@@ -87,6 +105,7 @@ const iconMap: Record<IconName, any> = {
   'times': faTimes,
   'arrow-left': faArrowLeft,
   'shield': faShield,
+  'shield-alt': faShieldAlt,
   'database': faDatabase,
   'envelope': faEnvelope,
   'bars': faBars,
@@ -96,6 +115,14 @@ const iconMap: Record<IconName, any> = {
   'phone': faPhone,
   'map-marker-alt': faMapMarkerAlt,
   'sign-out-alt': faSignOutAlt,
+  'filter': faFilter,
+  'spinner': faSpinner,
+  'inbox': faInbox,
+  'history': faHistory,
+  'chart-pie': faChartPie,
+  'edit': faEdit,
+  'info': faInfo,
+  'cube': faCube,
 }
 
 export function Icon({ name, className = '' }: IconProps) {

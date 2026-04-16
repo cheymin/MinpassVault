@@ -64,16 +64,15 @@ function LandingContent() {
         <LoginForm />
 
         <p className="text-center text-xs text-textMuted mt-8">
-          ©2026 Designed by{' '}
+          ©2026{' '}
           <a
-            href="https://github.com/djklmin"
+            href="https://github.com/cheymin"
             target="_blank"
             rel="noopener noreferrer"
             className="text-primary hover:text-primaryLight hover:underline transition-colors"
           >
-            min
+            github.com/cheymin
           </a>
-          {' '}for you!
         </p>
       </div>
     </div>

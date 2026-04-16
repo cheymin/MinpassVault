@@ -56,10 +56,29 @@ CREATE INDEX IF NOT EXISTS idx_vault_items_folder_id ON vault_items(folder_id);
 CREATE INDEX IF NOT EXISTS idx_folders_user_id ON folders(user_id);
 CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
 
+-- Create audit_logs table
+CREATE TABLE IF NOT EXISTS audit_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  action VARCHAR(50) NOT NULL,
+  resource_type VARCHAR(50),
+  resource_id VARCHAR(255),
+  details JSONB,
+  ip_address VARCHAR(45),
+  user_agent TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Create audit_logs indexes
+CREATE INDEX IF NOT EXISTS idx_audit_logs_user_id ON audit_logs(user_id);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at ON audit_logs(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_action ON audit_logs(action);
+
 -- Enable Row Level Security
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE vault_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE folders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
 
 -- Create RLS policies for users
 CREATE POLICY "Users can view own data" ON users
@@ -90,6 +109,13 @@ CREATE POLICY "Users can insert own folders" ON folders
 
 CREATE POLICY "Users can delete own folders" ON folders
   FOR DELETE USING (auth.uid()::text = user_id);
+
+-- Create RLS policies for audit_logs
+CREATE POLICY "Users can view own audit logs" ON audit_logs
+  FOR SELECT USING (auth.uid()::text = user_id);
+
+CREATE POLICY "Users can insert own audit logs" ON audit_logs
+  FOR INSERT WITH CHECK (auth.uid()::text = user_id);
 
 -- Create function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()

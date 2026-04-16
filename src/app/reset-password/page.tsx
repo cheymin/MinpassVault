@@ -161,6 +161,12 @@ function ResetPasswordContent() {
         </div>
 
         <div className="bg-gradient-to-br from-surface to-surfaceHover border border-border rounded-2xl p-6 shadow-lg">
+          <div className="p-4 bg-warning/10 border border-warning/20 rounded-lg mb-4">
+            <p className="text-sm text-warning font-medium mb-2">⚠️ 重要提示</p>
+            <p className="text-xs text-textMuted">
+              重置密码后，您之前保存的所有密码数据将无法恢复。这是因为系统采用零知识加密架构，无法在没有原密码的情况下解密数据。
+            </p>
+          </div>
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input
               type="password"
