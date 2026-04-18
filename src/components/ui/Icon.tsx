@@ -52,7 +52,9 @@ import {
   faCheck,
   faCheckCircle,
   faTimesCircle,
-  faExternalLinkAlt
+  faExternalLinkAlt,
+  faMoon,
+  faSun
 } from '@fortawesome/free-solid-svg-icons'
 
 export type IconName = 
@@ -107,6 +109,8 @@ export type IconName =
   | 'check-circle'
   | 'times-circle'
   | 'external-link-alt'
+  | 'moon'
+  | 'sun'
 
 interface IconProps {
   name: IconName
@@ -165,6 +169,8 @@ const iconMap: Record<IconName, any> = {
   'check-circle': faCheckCircle,
   'times-circle': faTimesCircle,
   'external-link-alt': faExternalLinkAlt,
+  'moon': faMoon,
+  'sun': faSun,
 }
 
 export function Icon({ name, className = '' }: IconProps) {
