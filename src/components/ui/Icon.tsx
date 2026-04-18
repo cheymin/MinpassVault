@@ -23,6 +23,8 @@ import {
   ArrowRight,
   ChevronLeft,
   ChevronRight,
+  ChevronUp,
+  ChevronDown,
   Shield,
   Database,
   Mail,
@@ -96,6 +98,8 @@ export type IconName =
   | 'arrow-right'
   | 'chevron-left'
   | 'chevron-right'
+  | 'chevron-up'
+  | 'chevron-down'
   | 'shield' 
   | 'shield-alt'
   | 'database' 
@@ -175,6 +179,8 @@ const iconMap: Record<IconName, any> = {
   'arrow-right': ArrowRight,
   'chevron-left': ChevronLeft,
   'chevron-right': ChevronRight,
+  'chevron-up': ChevronUp,
+  'chevron-down': ChevronDown,
   'shield': Shield,
   'shield-alt': ShieldCheck,
   'database': Database,
