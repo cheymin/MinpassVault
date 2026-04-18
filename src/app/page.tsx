@@ -88,15 +88,16 @@ function LandingContent() {
 
           <div className="mt-6 pt-6 border-t border-border text-center">
             <p className="text-xs text-textMuted">
-              ©2026{' '}
+              © 2026 designed{' '}
               <a
                 href="https://github.com/cheymin"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-primary hover:text-primaryHover font-medium transition-colors"
               >
-                github.com/cheymin
+                CheyMin
               </a>
+              {' '}for you!
             </p>
           </div>
         </div>

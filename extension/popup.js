@@ -127,7 +127,7 @@ async function login() {
       showError(loginError, data.error || 'Login failed')
     }
   } catch (error) {
-    showError(loginError, 'Connection failed. Check server URL.')
+    showError(loginError, '连接失败，请检查服务器地址')
   } finally {
     loginBtn.disabled = false
     loginBtn.textContent = 'Login'

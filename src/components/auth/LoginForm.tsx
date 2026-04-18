@@ -186,7 +186,7 @@ export function LoginForm() {
               onChange={(e) => setPassword(e.target.value)}
               required
               disabled={isLocked}
-              icon={<Icon name="lock" className="w-5 h-5" />}
+              icon={<Icon name="key" className="w-5 h-5" />}
             />
             {loginAttempts > 0 && !isLocked && (
               <div className="text-xs text-warning">

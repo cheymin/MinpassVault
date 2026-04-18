@@ -16,9 +16,12 @@ import { generateTOTPSecret, verifyTOTP } from '@/lib/totp'
 import { supabase } from '@/lib/supabase'
 
 const FONTS = [
-  { id: 'default', name: '默认字体', value: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif' },
-  { id: 'serif', name: '衬线字体', value: 'Georgia, Cambria, "Times New Roman", Times, serif' },
-  { id: 'mono', name: '等宽字体', value: '"SF Mono", "Fira Code", "Fira Mono", Menlo, Consolas, monospace' },
+  { id: 'default', name: '默认字体', value: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif', url: '' },
+  { id: 'serif', name: '衬线字体', value: 'Georgia, Cambria, "Times New Roman", Times, serif', url: '' },
+  { id: 'mono', name: '等宽字体', value: '"SF Mono", "Fira Code", "Fira Mono", Menlo, Consolas, monospace', url: '' },
+  { id: 'google-inter', name: 'Inter (Google Fonts)', value: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', url: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap' },
+  { id: 'google-roboto', name: 'Roboto (Google Fonts)', value: '"Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', url: 'https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap' },
+  { id: 'google-noto-sans', name: 'Noto Sans (Google Fonts)', value: '"Noto Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', url: 'https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;700&display=swap' },
 ]
 
 export default function SettingsPage() {
@@ -151,6 +154,17 @@ export default function SettingsPage() {
   const applyFont = (fontId: string) => {
     const font = FONTS.find(f => f.id === fontId)
     if (font) {
+      if (font.url) {
+        const existingLink = document.getElementById('google-font-link')
+        if (existingLink) {
+          existingLink.remove()
+        }
+        const link = document.createElement('link')
+        link.id = 'google-font-link'
+        link.rel = 'stylesheet'
+        link.href = font.url
+        document.head.appendChild(link)
+      }
       document.documentElement.style.setProperty('--font-sans', font.value)
     }
   }

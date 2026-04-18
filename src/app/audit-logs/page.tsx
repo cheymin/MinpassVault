@@ -179,7 +179,7 @@ function AuditLogsContent() {
               <p className="text-textMuted">查看所有账户活动记录</p>
             </div>
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 bg-surface border border-border rounded-lg px-3 py-2">
+              <div className="flex items-center gap-2 bg-surfaceHover border border-border rounded-lg px-3 py-2">
                 <Icon name="filter" className="w-4 h-4 text-textMuted" />
                 <select
                   value={filter}
@@ -195,7 +195,7 @@ function AuditLogsContent() {
                   ))}
                 </select>
               </div>
-              <div className="bg-surface border border-border rounded-lg px-3 py-2">
+              <div className="bg-surfaceHover border border-border rounded-lg px-3 py-2">
                 <span className="text-sm text-textMuted">共 </span>
                 <span className="text-sm font-semibold text-text">{total}</span>
                 <span className="text-sm text-textMuted"> 条</span>
