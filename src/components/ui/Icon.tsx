@@ -3,6 +3,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { 
   faLock, 
+  faLockOpen,
   faKey, 
   faFileLines, 
   faCreditCard, 
@@ -20,6 +21,9 @@ import {
   faEyeSlash, 
   faTimes, 
   faArrowLeft, 
+  faArrowRight,
+  faChevronLeft,
+  faChevronRight,
   faShield, 
   faShieldAlt,
   faDatabase, 
@@ -31,6 +35,7 @@ import {
   faPhone,
   faMapMarkerAlt,
   faSignOutAlt,
+  faSignInAlt,
   faFilter,
   faSpinner,
   faInbox,
@@ -38,11 +43,21 @@ import {
   faChartPie,
   faEdit,
   faInfo,
-  faCube
+  faInfoCircle,
+  faExclamationCircle,
+  faExclamationTriangle,
+  faCube,
+  faCloudUploadAlt,
+  faCloudDownloadAlt,
+  faCheck,
+  faCheckCircle,
+  faTimesCircle,
+  faExternalLinkAlt
 } from '@fortawesome/free-solid-svg-icons'
 
 export type IconName = 
   | 'lock' 
+  | 'lock-open'
   | 'key' 
   | 'file-lines' 
   | 'credit-card' 
@@ -60,6 +75,9 @@ export type IconName =
   | 'eye-slash' 
   | 'times' 
   | 'arrow-left' 
+  | 'arrow-right'
+  | 'chevron-left'
+  | 'chevron-right'
   | 'shield' 
   | 'shield-alt'
   | 'database' 
@@ -71,6 +89,7 @@ export type IconName =
   | 'phone'
   | 'map-marker-alt'
   | 'sign-out-alt'
+  | 'sign-in-alt'
   | 'filter'
   | 'spinner'
   | 'inbox'
@@ -78,7 +97,16 @@ export type IconName =
   | 'chart-pie'
   | 'edit'
   | 'info'
+  | 'info-circle'
+  | 'exclamation-circle'
+  | 'exclamation-triangle'
   | 'cube'
+  | 'cloud-upload-alt'
+  | 'cloud-download-alt'
+  | 'check'
+  | 'check-circle'
+  | 'times-circle'
+  | 'external-link-alt'
 
 interface IconProps {
   name: IconName
@@ -87,6 +115,7 @@ interface IconProps {
 
 const iconMap: Record<IconName, any> = {
   'lock': faLock,
+  'lock-open': faLockOpen,
   'key': faKey,
   'file-lines': faFileLines,
   'credit-card': faCreditCard,
@@ -104,6 +133,9 @@ const iconMap: Record<IconName, any> = {
   'eye-slash': faEyeSlash,
   'times': faTimes,
   'arrow-left': faArrowLeft,
+  'arrow-right': faArrowRight,
+  'chevron-left': faChevronLeft,
+  'chevron-right': faChevronRight,
   'shield': faShield,
   'shield-alt': faShieldAlt,
   'database': faDatabase,
@@ -115,6 +147,7 @@ const iconMap: Record<IconName, any> = {
   'phone': faPhone,
   'map-marker-alt': faMapMarkerAlt,
   'sign-out-alt': faSignOutAlt,
+  'sign-in-alt': faSignInAlt,
   'filter': faFilter,
   'spinner': faSpinner,
   'inbox': faInbox,
@@ -122,7 +155,16 @@ const iconMap: Record<IconName, any> = {
   'chart-pie': faChartPie,
   'edit': faEdit,
   'info': faInfo,
+  'info-circle': faInfoCircle,
+  'exclamation-circle': faExclamationCircle,
+  'exclamation-triangle': faExclamationTriangle,
   'cube': faCube,
+  'cloud-upload-alt': faCloudUploadAlt,
+  'cloud-download-alt': faCloudDownloadAlt,
+  'check': faCheck,
+  'check-circle': faCheckCircle,
+  'times-circle': faTimesCircle,
+  'external-link-alt': faExternalLinkAlt,
 }
 
 export function Icon({ name, className = '' }: IconProps) {
