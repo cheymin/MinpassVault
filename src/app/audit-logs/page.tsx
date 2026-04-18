@@ -178,29 +178,29 @@ function AuditLogsContent() {
               <h1 className="text-2xl font-bold text-text mb-1">安全审计日志</h1>
               <p className="text-textMuted">查看所有账户活动记录</p>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 bg-surfaceHover border border-border rounded-lg px-3 py-2">
-                <Icon name="filter" className="w-4 h-4 text-textMuted" />
-                <select
-                  value={filter}
-                  onChange={(e) => {
-                    setFilter(e.target.value)
-                    setPage(0)
-                  }}
-                  className="bg-transparent text-sm text-text focus:outline-none cursor-pointer"
-                >
-                  <option value="">全部操作</option>
-                  {Object.entries(ACTION_LABELS).map(([value, label]) => (
-                    <option key={value} value={value}>{label}</option>
-                  ))}
-                </select>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 bg-surfaceHover border border-border rounded-lg px-3 py-2">
+                  <Icon name="filter" className="w-4 h-4 text-textMuted" />
+                  <select
+                    value={filter}
+                    onChange={(e) => {
+                      setFilter(e.target.value)
+                      setPage(0)
+                    }}
+                    className="bg-transparent text-sm text-text focus:outline-none cursor-pointer [&>option]:bg-surface [&>option]:text-text"
+                  >
+                    <option value="">全部操作</option>
+                    {Object.entries(ACTION_LABELS).map(([value, label]) => (
+                      <option key={value} value={value}>{label}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="bg-surfaceHover border border-border rounded-lg px-3 py-2">
+                  <span className="text-sm text-textMuted">共 </span>
+                  <span className="text-sm font-semibold text-text">{total}</span>
+                  <span className="text-sm text-textMuted"> 条</span>
+                </div>
               </div>
-              <div className="bg-surfaceHover border border-border rounded-lg px-3 py-2">
-                <span className="text-sm text-textMuted">共 </span>
-                <span className="text-sm font-semibold text-text">{total}</span>
-                <span className="text-sm text-textMuted"> 条</span>
-              </div>
-            </div>
           </div>
         </div>
 
