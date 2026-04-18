@@ -6,26 +6,33 @@ const config: Config = {
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
-        background: '#0f0f0f',
-        surface: '#1e1e1e',
-        surfaceHover: '#2a2a2a',
-        border: '#333333',
-        primary: '#3b82f6',
-        primaryHover: '#2563eb',
-        primaryLight: '#60a5fa',
-        text: '#ffffff',
-        textMuted: '#9ca3af',
-        danger: '#ef4444',
-        success: '#22c55e',
-        warning: '#f59e0b',
+        background: 'var(--background)',
+        surface: 'var(--surface)',
+        surfaceHover: 'var(--surface-hover)',
+        border: 'var(--border)',
+        primary: 'var(--primary)',
+        primaryHover: 'var(--primary-hover)',
+        primaryLight: 'var(--primary-light)',
+        text: 'var(--text)',
+        textMuted: 'var(--text-muted)',
+        danger: 'var(--danger)',
+        success: 'var(--success)',
+        warning: 'var(--warning)',
+      },
+      fontFamily: {
+        sans: 'var(--font-sans)',
+        mono: 'var(--font-mono)',
+        serif: 'var(--font-serif)',
       },
       boxShadow: {
-        'glow': '0 0 20px rgba(59, 130, 246, 0.3)',
-        'card': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-        'modal': '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+        'glow': '0 0 20px var(--shadow-glow)',
+        'card': '0 1px 3px var(--shadow-sm), 0 1px 2px var(--shadow-xs)',
+        'card-hover': '0 4px 12px var(--shadow-md)',
+        'modal': '0 25px 50px -12px var(--shadow-lg)',
       },
       animation: {
         'fade-in': 'fadeIn 0.2s ease-out',
@@ -35,7 +42,7 @@ const config: Config = {
       },
       keyframes: {
         fadeIn: {
-          '0%': { opacity: '0', transform: 'scale(0.95)' },
+          '0%': { opacity: '0', transform: 'scale(0.98)' },
           '100%': { opacity: '1', transform: 'scale(1)' },
         },
         slideIn: {

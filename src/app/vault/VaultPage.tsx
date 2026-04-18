@@ -26,7 +26,6 @@ export default function VaultPage() {
   const [showAddModal, setShowAddModal] = useState(false)
   const [showPasswordGen, setShowPasswordGen] = useState(false)
   const [showImportExport, setShowImportExport] = useState(false)
-  const [showSettings, setShowSettings] = useState(false)
   const [showFolderModal, setShowFolderModal] = useState(false)
   const [newFolderName, setNewFolderName] = useState('')
   const [showUnlockModal, setShowUnlockModal] = useState(false)
@@ -87,52 +86,51 @@ export default function VaultPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="bg-surface border-b border-border sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-2 sm:px-4 py-3">
+      <header className="bg-surface border-b border-border sticky top-0 z-40 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 sm:gap-4">
+            <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
-                <img 
-                  src={user?.siteIcon || 'https://djkl.qzz.io/file/1.webp'} 
-                  alt="Logo" 
-                  className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg"
-                />
-                <span className="font-semibold text-text text-sm sm:text-base">{user?.siteTitle || 'SecureVault'}</span>
+                <div className="w-8 h-8 bg-gradient-to-br from-primary to-primaryLight rounded-lg flex items-center justify-center">
+                  <Icon name="lock" className="w-4 h-4 text-white" />
+                </div>
+                <span className="font-semibold text-text">{user?.siteTitle || 'SecureVault'}</span>
               </div>
             </div>
 
-            <div className="flex items-center gap-1 sm:gap-3">
-              <Button variant="ghost" size="sm" onClick={() => setShowMobileMenu(!showMobileMenu)} className="sm:hidden">
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" onClick={() => setShowMobileMenu(!showMobileMenu)} className="lg:hidden">
                 <Icon name="bars" className="w-5 h-5" />
               </Button>
-              <div className={`hidden sm:flex items-center gap-1 sm:gap-3 transition-all ${showMobileMenu ? 'flex' : ''}`}>
-                <Button variant="ghost" size="sm" onClick={() => router.push('/dashboard')}>
-                  <Icon name="chart-pie" className="w-4 h-4 mr-1" />
-                  <span className="hidden sm:inline">仪表盘</span>
+              <div className="hidden lg:flex items-center gap-1">
+                <Button variant="ghost" size="sm" onClick={() => router.push('/dashboard')} className="text-textMuted hover:text-text">
+                  <Icon name="chart-pie" className="w-4 h-4 mr-1.5" />
+                  仪表盘
                 </Button>
-                <Button variant="ghost" size="sm" onClick={() => router.push('/audit-logs')}>
-                  <Icon name="history" className="w-4 h-4 mr-1" />
-                  <span className="hidden sm:inline">审计日志</span>
+                <Button variant="ghost" size="sm" onClick={() => router.push('/audit-logs')} className="text-textMuted hover:text-text">
+                  <Icon name="history" className="w-4 h-4 mr-1.5" />
+                  审计日志
                 </Button>
-                <Button variant="ghost" size="sm" onClick={() => router.push('/settings')}>
-                  <Icon name="cog" className="w-4 h-4 mr-1" />
-                  <span className="hidden sm:inline">设置</span>
+                <Button variant="ghost" size="sm" onClick={() => setShowPasswordGen(true)} className="text-textMuted hover:text-text">
+                  <Icon name="key" className="w-4 h-4 mr-1.5" />
+                  密码生成器
                 </Button>
-                <Button variant="ghost" size="sm" onClick={() => setShowPasswordGen(true)}>
-                  <Icon name="key" className="w-4 h-4 mr-1" />
-                  <span className="hidden sm:inline">密码生成器</span>
+                <Button variant="ghost" size="sm" onClick={() => setShowImportExport(true)} className="text-textMuted hover:text-text">
+                  <Icon name="download" className="w-4 h-4 mr-1.5" />
+                  导入/导出
                 </Button>
-                <Button variant="ghost" size="sm" onClick={() => setShowImportExport(true)}>
-                  <Icon name="download" className="w-4 h-4 mr-1" />
-                  <span className="hidden sm:inline">导入/导出</span>
+                <div className="w-px h-5 bg-border mx-1"></div>
+                <Button variant="ghost" size="sm" onClick={() => router.push('/settings')} className="text-textMuted hover:text-text">
+                  <Icon name="cog" className="w-4 h-4 mr-1.5" />
+                  设置
                 </Button>
-                <Button variant="ghost" size="sm" onClick={handleLock}>
-                  <Icon name="lock" className="w-4 h-4 mr-1" />
-                  <span className="hidden sm:inline">锁定</span>
+                <Button variant="ghost" size="sm" onClick={handleLock} className="text-textMuted hover:text-text">
+                  <Icon name="lock" className="w-4 h-4 mr-1.5" />
+                  锁定
                 </Button>
-                <Button variant="ghost" size="sm" onClick={handleSignOut}>
-                  <Icon name="sign-out-alt" className="w-4 h-4 mr-1 sm:mr-2" />
-                  <span className="hidden sm:inline">退出登录</span>
+                <Button variant="ghost" size="sm" onClick={handleSignOut} className="text-textMuted hover:text-danger">
+                  <Icon name="sign-out-alt" className="w-4 h-4 mr-1.5" />
+                  退出
                 </Button>
               </div>
             </div>
@@ -141,33 +139,34 @@ export default function VaultPage() {
       </header>
 
       {showMobileMenu && (
-        <div className="sm:hidden fixed top-16 left-0 right-0 bg-surface border-b border-border z-30 animate-fade-in">
-          <div className="px-4 py-3 space-y-2">
-            <Button variant="ghost" size="sm" onClick={() => { router.push('/dashboard'); setShowMobileMenu(false) }} className="w-full justify-start">
+        <div className="lg:hidden fixed top-14 left-0 right-0 bg-surface border-b border-border z-30 shadow-lg animate-fade-in">
+          <div className="px-4 py-3 space-y-1">
+            <Button variant="ghost" size="sm" onClick={() => { router.push('/dashboard'); setShowMobileMenu(false) }} className="w-full justify-start text-textMuted">
               <Icon name="chart-pie" className="w-4 h-4 mr-2" />
               仪表盘
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => { router.push('/audit-logs'); setShowMobileMenu(false) }} className="w-full justify-start">
+            <Button variant="ghost" size="sm" onClick={() => { router.push('/audit-logs'); setShowMobileMenu(false) }} className="w-full justify-start text-textMuted">
               <Icon name="history" className="w-4 h-4 mr-2" />
               审计日志
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => { router.push('/settings'); setShowMobileMenu(false) }} className="w-full justify-start">
-              <Icon name="cog" className="w-4 h-4 mr-2" />
-              设置
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => { setShowPasswordGen(true); setShowMobileMenu(false) }} className="w-full justify-start">
+            <Button variant="ghost" size="sm" onClick={() => { setShowPasswordGen(true); setShowMobileMenu(false) }} className="w-full justify-start text-textMuted">
               <Icon name="key" className="w-4 h-4 mr-2" />
               密码生成器
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => { setShowImportExport(true); setShowMobileMenu(false) }} className="w-full justify-start">
+            <Button variant="ghost" size="sm" onClick={() => { setShowImportExport(true); setShowMobileMenu(false) }} className="w-full justify-start text-textMuted">
               <Icon name="download" className="w-4 h-4 mr-2" />
               导入/导出
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => { handleLock(); setShowMobileMenu(false) }} className="w-full justify-start">
+            <div className="border-t border-border my-2"></div>
+            <Button variant="ghost" size="sm" onClick={() => { router.push('/settings'); setShowMobileMenu(false) }} className="w-full justify-start text-textMuted">
+              <Icon name="cog" className="w-4 h-4 mr-2" />
+              设置
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => { handleLock(); setShowMobileMenu(false) }} className="w-full justify-start text-textMuted">
               <Icon name="lock" className="w-4 h-4 mr-2" />
               锁定
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => { handleSignOut(); setShowMobileMenu(false) }} className="w-full justify-start">
+            <Button variant="ghost" size="sm" onClick={() => { handleSignOut(); setShowMobileMenu(false) }} className="w-full justify-start text-danger">
               <Icon name="sign-out-alt" className="w-4 h-4 mr-2" />
               退出登录
             </Button>
@@ -175,41 +174,43 @@ export default function VaultPage() {
         </div>
       )}
 
-      <div className="max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-6">
-        <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+        <div className="flex flex-col lg:flex-row gap-6">
           <aside className="w-full lg:w-64 shrink-0">
-            <div className="bg-surface border border-border rounded-xl p-3 sm:p-4 sticky top-20 lg:top-24">
-              <Button onClick={() => setShowAddModal(true)} className="w-full mb-3 sm:mb-4">
+            <div className="bg-surface border border-border rounded-xl p-4 sticky top-20 shadow-sm">
+              <Button onClick={() => setShowAddModal(true)} className="w-full mb-4">
                 <Icon name="plus" className="w-4 h-4 mr-2" />
                 添加项目
               </Button>
 
-              <div className="space-y-1 mb-3 sm:mb-4">
+              <div className="space-y-1 mb-4">
                 {typeFilters.map((filter) => (
                   <button
                     key={filter.value}
                     onClick={() => setSelectedType(filter.value)}
-                    className={`w-full flex items-center gap-2 px-2 sm:px-3 py-2 rounded-lg text-left transition-colors ${
+                    className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-left transition-all ${
                       selectedType === filter.value
-                        ? 'bg-primary/10 text-primary'
+                        ? 'bg-primary/10 text-primary font-medium'
                         : 'text-textMuted hover:bg-surfaceHover hover:text-text'
                     }`}
                   >
                     <Icon name={filter.icon as any} className="w-4 h-4" />
-                    <span className="text-xs sm:text-sm">{filter.label}</span>
-                    <span className="ml-auto text-xs text-textMuted">
+                    <span className="text-sm flex-1">{filter.label}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${
+                      selectedType === filter.value ? 'bg-primary/20 text-primary' : 'bg-surfaceHover text-textMuted'
+                    }`}>
                       {filter.value === 'all' ? items.length : items.filter((i) => i.type === filter.value).length}
                     </span>
                   </button>
                 ))}
               </div>
 
-              <div className="border-t border-border pt-3 sm:pt-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-medium text-textMuted uppercase">文件夹</span>
+              <div className="border-t border-border pt-4">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs font-semibold text-textMuted uppercase tracking-wide">文件夹</span>
                   <button
                     onClick={() => setShowFolderModal(true)}
-                    className="text-textMuted hover:text-text"
+                    className="text-textMuted hover:text-primary transition-colors"
                   >
                     <Icon name="plus" className="w-4 h-4" />
                   </button>
@@ -217,33 +218,33 @@ export default function VaultPage() {
                 <div className="space-y-1">
                   <button
                     onClick={() => setSelectedFolder(null)}
-                    className={`w-full flex items-center gap-2 px-2 sm:px-3 py-2 rounded-lg text-left transition-colors ${
+                    className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-left transition-all ${
                       selectedFolder === null
-                        ? 'bg-primary/10 text-primary'
+                        ? 'bg-primary/10 text-primary font-medium'
                         : 'text-textMuted hover:bg-surfaceHover hover:text-text'
                     }`}
                   >
                     <Icon name="folder" className="w-4 h-4" />
-                    <span className="text-xs sm:text-sm">全部项目</span>
+                    <span className="text-sm">全部项目</span>
                   </button>
                   {folders.map((folder) => (
                     <button
                       key={folder.id}
                       onClick={() => setSelectedFolder(folder.id)}
-                      className={`w-full flex items-center gap-2 px-2 sm:px-3 py-2 rounded-lg text-left transition-colors group ${
+                      className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-left transition-all group ${
                         selectedFolder === folder.id
-                          ? 'bg-primary/10 text-primary'
+                          ? 'bg-primary/10 text-primary font-medium'
                           : 'text-textMuted hover:bg-surfaceHover hover:text-text'
                       }`}
                     >
                       <Icon name="folder" className="w-4 h-4" />
-                      <span className="text-xs sm:text-sm flex-1 truncate">{folder.name}</span>
+                      <span className="text-sm flex-1 truncate">{folder.name}</span>
                       <button
                         onClick={(e) => {
                           e.stopPropagation()
                           deleteFolder(folder.id)
                         }}
-                        className="opacity-0 group-hover:opacity-100 text-textMuted hover:text-danger"
+                        className="opacity-0 group-hover:opacity-100 text-textMuted hover:text-danger transition-all"
                       >
                         <Icon name="trash" className="w-4 h-4" />
                       </button>
@@ -255,27 +256,30 @@ export default function VaultPage() {
           </aside>
 
           <main className="flex-1">
-            <div className="mb-4 sm:mb-6">
-              <Input
-                type="search"
-                placeholder="搜索保险库..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                icon={<Icon name="search" className="w-4 sm:w-5 h-4 sm:h-5" />}
-              />
+            <div className="mb-6">
+              <div className="relative">
+                <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-textMuted" />
+                <input
+                  type="search"
+                  placeholder="搜索保险库..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full bg-surface border border-border rounded-xl pl-10 pr-4 py-3 text-text placeholder-textMuted focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
+                />
+              </div>
             </div>
 
             {loading ? (
-              <div className="flex items-center justify-center py-12">
+              <div className="flex items-center justify-center py-16">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
               </div>
             ) : filteredItems.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="w-14 h-14 sm:w-16 sm:h-16 bg-surface rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Icon name="search" className="w-6 h-6 sm:w-8 sm:h-8 text-textMuted" />
+              <div className="text-center py-16">
+                <div className="w-16 h-16 bg-surfaceHover rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <Icon name="search" className="w-8 h-8 text-textMuted" />
                 </div>
-                <h3 className="text-base sm:text-lg font-medium text-text mb-1">未找到项目</h3>
-                <p className="text-sm sm:text-base text-textMuted mb-4">
+                <h3 className="text-lg font-medium text-text mb-1">未找到项目</h3>
+                <p className="text-textMuted mb-6">
                   {search ? '请尝试其他搜索词' : '添加您的第一个项目开始使用'}
                 </p>
                 <Button onClick={() => setShowAddModal(true)}>
@@ -284,13 +288,14 @@ export default function VaultPage() {
                 </Button>
               </div>
             ) : (
-              <div className="space-y-4 sm:space-y-6">
+              <div className="space-y-6">
                 {favoriteItems.length > 0 && (
                   <div>
-                    <h2 className="text-xs sm:text-sm font-medium text-textMuted mb-2 sm:mb-3 flex items-center gap-2">
-                      <span className="text-warning">★</span> 收藏
+                    <h2 className="text-sm font-semibold text-textMuted mb-3 flex items-center gap-2">
+                      <Icon name="star" className="w-4 h-4 text-warning" />
+                      收藏
                     </h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                       {favoriteItems.map((item) => (
                         <VaultItemCard key={item.id} item={item} />
                       ))}
@@ -301,9 +306,9 @@ export default function VaultPage() {
                 {regularItems.length > 0 && (
                   <div>
                     {favoriteItems.length > 0 && (
-                      <h2 className="text-xs sm:text-sm font-medium text-textMuted mb-2 sm:mb-3">全部项目</h2>
+                      <h2 className="text-sm font-semibold text-textMuted mb-3">全部项目</h2>
                     )}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                       {regularItems.map((item) => (
                         <VaultItemCard key={item.id} item={item} />
                       ))}

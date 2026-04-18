@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect } from 'react'
-import { useAuth } from '@/contexts/AuthContext'
 import CryptoJS from 'crypto-js'
 
 if (typeof window !== 'undefined') {
@@ -9,13 +8,8 @@ if (typeof window !== 'undefined') {
 }
 
 export function DynamicHead() {
-  const { user } = useAuth()
-
   useEffect(() => {
-    const title = user?.siteTitle || 'SecureVault'
-    const icon = user?.siteIcon || 'https://djkl.qzz.io/file/1.webp'
-    
-    document.title = title
+    document.title = 'MinpassVault'
     
     let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement
     if (!link) {
@@ -23,8 +17,8 @@ export function DynamicHead() {
       link.rel = 'icon'
       document.head.appendChild(link)
     }
-    link.href = icon
-  }, [user?.siteTitle, user?.siteIcon])
+    link.href = '/icon.png'
+  }, [])
 
   return null
 }

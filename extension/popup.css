@@ -1,0 +1,404 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  width: 360px;
+  min-height: 400px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  background: #0f172a;
+  color: #f1f5f9;
+}
+
+#app {
+  padding: 16px;
+}
+
+.view {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.view.hidden {
+  display: none;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #334155;
+  margin-bottom: 4px;
+}
+
+.header h1 {
+  font-size: 18px;
+  font-weight: 600;
+  flex: 1;
+}
+
+.header h2 {
+  font-size: 16px;
+  font-weight: 600;
+  flex: 1;
+}
+
+.logo {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #38bdf8, #7dd3fc);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-size: 12px;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="url"],
+input[type="email"],
+input[type="number"] {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  background: #1e293b;
+  color: #f1f5f9;
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+input:focus {
+  outline: none;
+  border-color: #38bdf8;
+}
+
+input::placeholder {
+  color: #64748b;
+}
+
+.password-input {
+  display: flex;
+  gap: 8px;
+}
+
+.password-input input {
+  flex: 1;
+}
+
+.btn-primary {
+  width: 100%;
+  padding: 12px;
+  background: #38bdf8;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-primary:hover {
+  background: #0ea5e9;
+}
+
+.btn-primary:disabled {
+  background: #475569;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  width: 100%;
+  padding: 10px;
+  background: #334155;
+  color: #f1f5f9;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-secondary:hover {
+  background: #475569;
+}
+
+.btn-danger {
+  width: 100%;
+  padding: 10px;
+  background: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-danger:hover {
+  background: #b91c1c;
+}
+
+.btn-icon {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: #94a3b8;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s;
+}
+
+.btn-icon:hover {
+  background: #334155;
+  color: #f1f5f9;
+}
+
+.error-message {
+  color: #f87171;
+  font-size: 12px;
+  text-align: center;
+  padding: 8px;
+  background: rgba(248, 113, 113, 0.1);
+  border-radius: 6px;
+  display: none;
+}
+
+.error-message.show {
+  display: block;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+}
+
+.search-box svg {
+  color: #64748b;
+  flex-shrink: 0;
+}
+
+.search-box input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 0;
+  font-size: 14px;
+}
+
+.search-box input:focus {
+  outline: none;
+}
+
+.passwords-list {
+  max-height: 280px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.password-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.password-item:hover {
+  border-color: #38bdf8;
+}
+
+.password-item .icon {
+  width: 36px;
+  height: 36px;
+  background: #334155;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 600;
+  color: #38bdf8;
+}
+
+.password-item .info {
+  flex: 1;
+  min-width: 0;
+}
+
+.password-item .name {
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.password-item .username {
+  font-size: 12px;
+  color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.password-item .actions {
+  display: flex;
+  gap: 4px;
+}
+
+.password-item .actions button {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: #94a3b8;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.password-item .actions button:hover {
+  background: #334155;
+  color: #f1f5f9;
+}
+
+.footer {
+  display: flex;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid #334155;
+  margin-top: auto;
+}
+
+.footer .btn-secondary {
+  flex: 1;
+}
+
+.settings-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+}
+
+.settings-item label {
+  font-size: 14px;
+  color: #f1f5f9;
+}
+
+.settings-item input[type="checkbox"] {
+  width: 40px;
+  height: 20px;
+  appearance: none;
+  background: #334155;
+  border-radius: 10px;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.settings-item input[type="checkbox"]::before {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #94a3b8;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.settings-item input[type="checkbox"]:checked {
+  background: #38bdf8;
+}
+
+.settings-item input[type="checkbox"]:checked::before {
+  transform: translateX(20px);
+  background: white;
+}
+
+.settings-item input[type="number"] {
+  width: 80px;
+  padding: 6px 10px;
+  text-align: center;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 32px 16px;
+  color: #64748b;
+}
+
+.empty-state svg {
+  margin-bottom: 12px;
+  opacity: 0.5;
+}
+
+.empty-state p {
+  font-size: 14px;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}

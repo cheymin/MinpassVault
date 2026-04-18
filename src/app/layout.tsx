@@ -1,18 +1,17 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { VaultProvider } from '@/contexts/VaultContext'
 import { ToastProvider } from '@/contexts/ToastContext'
+import { ThemeProvider } from '@/contexts/ThemeContext'
+import { LanguageProvider } from '@/contexts/LanguageContext'
 import { DynamicHead } from '@/components/DynamicHead'
 
-const inter = Inter({ subsets: ['latin'] })
-
 export const metadata: Metadata = {
-  title: 'SecureVault密码管理器',
+  title: 'MinpassVault - 密码管理器',
   description: '安全可靠的密码管理器',
   icons: {
-    icon: 'https://djkl.qzz.io/file/1.webp',
+    icon: '/icon.png',
   },
 }
 
@@ -22,16 +21,23 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="zh-CN">
-      <body className={inter.className}>
-        <AuthProvider>
-          <VaultProvider>
-            <ToastProvider>
-              <DynamicHead />
-              {children}
-            </ToastProvider>
-          </VaultProvider>
-        </AuthProvider>
+    <html lang="zh-CN" suppressHydrationWarning>
+      <head>
+        <link rel="icon" href="/icon.png" />
+      </head>
+      <body suppressHydrationWarning>
+        <ThemeProvider>
+          <LanguageProvider>
+            <AuthProvider>
+              <VaultProvider>
+                <ToastProvider>
+                  <DynamicHead />
+                  {children}
+                </ToastProvider>
+              </VaultProvider>
+            </AuthProvider>
+          </LanguageProvider>
+        </ThemeProvider>
       </body>
     </html>
   )

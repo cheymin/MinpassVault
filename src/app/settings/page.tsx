@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { useVault } from '@/contexts/VaultContext'
 import { useToast } from '@/contexts/ToastContext'
+import { useTheme } from '@/contexts/ThemeContext'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Modal } from '@/components/ui/Modal'
@@ -13,16 +15,23 @@ import { resetDatabase } from '@/lib/init'
 import { generateTOTPSecret, verifyTOTP } from '@/lib/totp'
 import { supabase } from '@/lib/supabase'
 
+const FONTS = [
+  { id: 'default', name: '默认字体', value: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif' },
+  { id: 'serif', name: '衬线字体', value: 'Georgia, Cambria, "Times New Roman", Times, serif' },
+  { id: 'mono', name: '等宽字体', value: '"SF Mono", "Fira Code", "Fira Mono", Menlo, Consolas, monospace' },
+]
+
 export default function SettingsPage() {
-  const { user, signOut, changePassword, updateSiteSettings, updateEmail, enableEmailVerification, disableEmailVerification } = useAuth()
+  const { user, signOut, changePassword, updateEmail, enableEmailVerification, disableEmailVerification } = useAuth()
   const { items, addItem } = useVault()
   const { showToast } = useToast()
   const router = useRouter()
+  const { theme, setTheme } = useTheme()
+  const { language, setLanguage, t } = useLanguage()
 
   const [showChangePassword, setShowChangePassword] = useState(false)
   const [showReset, setShowReset] = useState(false)
   const [showCsvImport, setShowCsvImport] = useState(false)
-  const [showSiteSettings, setShowSiteSettings] = useState(false)
   const [showSmtpSettings, setShowSmtpSettings] = useState(false)
   const [show2FASettings, setShow2FASettings] = useState(false)
   const [showEmailSettings, setShowEmailSettings] = useState(false)
@@ -36,11 +45,6 @@ export default function SettingsPage() {
 
   const [resetLoading, setResetLoading] = useState(false)
   const [csvLoading, setCsvLoading] = useState(false)
-
-  const [siteTitle, setSiteTitle] = useState('')
-  const [siteIcon, setSiteIcon] = useState('')
-  const [siteSettingsLoading, setSiteSettingsLoading] = useState(false)
-  const [siteSettingsError, setSiteSettingsError] = useState('')
 
   const [emailServiceType, setEmailServiceType] = useState<'smtp' | 'resend'>('smtp')
   const [smtpHost, setSmtpHost] = useState('')
@@ -76,10 +80,10 @@ export default function SettingsPage() {
   const [webdavError, setWebdavError] = useState('')
   const [backupLoading, setBackupLoading] = useState(false)
 
+  const [currentFont, setCurrentFont] = useState('default')
+
   useEffect(() => {
     if (user) {
-      setSiteTitle(user.siteTitle || 'SecureVault密码管理器')
-      setSiteIcon(user.siteIcon || 'https://djkl.qzz.io/file/1.webp')
       setTwoFactorEnabled(user.twoFactorEnabled || false)
       setEmail(user.email || '')
       setEmailVerificationEnabled(user.emailVerificationEnabled || false)
@@ -138,17 +142,36 @@ export default function SettingsPage() {
     loadWebDAVConfig()
   }, [user?.id])
 
+  useEffect(() => {
+    const savedFont = localStorage.getItem('font') || 'default'
+    setCurrentFont(savedFont)
+    applyFont(savedFont)
+  }, [])
+
+  const applyFont = (fontId: string) => {
+    const font = FONTS.find(f => f.id === fontId)
+    if (font) {
+      document.documentElement.style.setProperty('--font-sans', font.value)
+    }
+  }
+
+  const handleFontChange = (fontId: string) => {
+    setCurrentFont(fontId)
+    localStorage.setItem('font', fontId)
+    applyFont(fontId)
+  }
+
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault()
     setPasswordError('')
 
     if (newPassword !== confirmPassword) {
-      setPasswordError('两次密码不一致')
+      setPasswordError(language === 'zh' ? '两次密码不一致' : 'Passwords do not match')
       return
     }
 
     if (newPassword.length < 8) {
-      setPasswordError('密码至少需要8个字符')
+      setPasswordError(language === 'zh' ? '密码至少需要8个字符' : 'Password must be at least 8 characters')
       return
     }
 
@@ -159,7 +182,7 @@ export default function SettingsPage() {
     if (result.error) {
       setPasswordError(result.error)
     } else {
-      showToast('密码修改成功', 'success')
+      showToast(language === 'zh' ? '密码修改成功' : 'Password changed successfully', 'success')
       setOldPassword('')
       setNewPassword('')
       setConfirmPassword('')
@@ -173,9 +196,9 @@ export default function SettingsPage() {
     setResetLoading(false)
 
     if (result.error) {
-      showToast('重置失败: ' + result.error, 'error')
+      showToast(language === 'zh' ? '重置失败: ' : 'Reset failed: ' + result.error, 'error')
     } else {
-      showToast('数据库已重置', 'success')
+      showToast(language === 'zh' ? '数据库已重置' : 'Database reset', 'success')
       signOut()
       router.push('/')
     }
@@ -192,7 +215,7 @@ export default function SettingsPage() {
       const lines = text.split('\n').filter((line) => line.trim())
       
       if (lines.length < 2) {
-        throw new Error('CSV 文件为空或格式不正确')
+        throw new Error(language === 'zh' ? 'CSV 文件为空或格式不正确' : 'CSV file is empty or invalid')
       }
 
       const header = lines[0].toLowerCase().split(',').map((h) => h.trim().replace(/"/g, ''))
@@ -203,7 +226,7 @@ export default function SettingsPage() {
       const notesIndex = header.findIndex((h) => h === 'notes' || h === '备注')
 
       if (nameIndex === -1) {
-        throw new Error('CSV 文件缺少名称列')
+        throw new Error(language === 'zh' ? 'CSV 文件缺少名称列' : 'CSV file missing name column')
       }
 
       let imported = 0
@@ -230,28 +253,12 @@ export default function SettingsPage() {
         if (!result.error) imported++
       }
 
-      showToast(`成功导入 ${imported} 个项目`, 'success')
+      showToast(language === 'zh' ? `成功导入 ${imported} 个项目` : `Successfully imported ${imported} items`, 'success')
     } catch (err) {
-      showToast(err instanceof Error ? err.message : '导入失败，请检查文件格式', 'error')
+      showToast(err instanceof Error ? err.message : (language === 'zh' ? '导入失败' : 'Import failed'), 'error')
     } finally {
       setCsvLoading(false)
       e.target.value = ''
-    }
-  }
-
-  const handleSiteSettings = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setSiteSettingsError('')
-    setSiteSettingsLoading(true)
-
-    const result = await updateSiteSettings(siteTitle, siteIcon)
-    setSiteSettingsLoading(false)
-
-    if (result.error) {
-      setSiteSettingsError(result.error)
-    } else {
-      showToast('设置已保存', 'success')
-      setShowSiteSettings(false)
     }
   }
 
@@ -261,20 +268,20 @@ export default function SettingsPage() {
     setEmailSettingsLoading(true)
 
     if (!user?.id) {
-      setEmailSettingsError('用户信息错误')
+      setEmailSettingsError(language === 'zh' ? '用户信息错误' : 'User info error')
       setEmailSettingsLoading(false)
       return
     }
 
     if (emailServiceType === 'smtp') {
       if (!smtpHost.trim() || !smtpUser.trim() || !smtpPass.trim()) {
-        setEmailSettingsError('请填写完整的SMTP配置信息')
+        setEmailSettingsError(language === 'zh' ? '请填写完整的SMTP配置信息' : 'Please fill in all SMTP fields')
         setEmailSettingsLoading(false)
         return
       }
     } else {
       if (!resendApiKey.trim()) {
-        setEmailSettingsError('请输入 Resend API Key')
+        setEmailSettingsError(language === 'zh' ? '请输入 Resend API Key' : 'Please enter Resend API Key')
         setEmailSettingsLoading(false)
         return
       }
@@ -303,13 +310,13 @@ export default function SettingsPage() {
       const data = await response.json()
 
       if (!response.ok) {
-        setEmailSettingsError(data.error || '保存失败')
+        setEmailSettingsError(data.error || (language === 'zh' ? '保存失败' : 'Save failed'))
       } else {
-        showToast('邮件配置已保存', 'success')
+        showToast(language === 'zh' ? '邮件配置已保存' : 'Email settings saved', 'success')
         setShowSmtpSettings(false)
       }
     } catch (err) {
-      setEmailSettingsError('保存失败，请稍后重试')
+      setEmailSettingsError(language === 'zh' ? '保存失败，请稍后重试' : 'Save failed, please try again')
     } finally {
       setEmailSettingsLoading(false)
     }
@@ -332,14 +339,14 @@ export default function SettingsPage() {
     setTwoFactorLoading(true)
 
     if (!twoFactorCode || twoFactorCode.length !== 6) {
-      setTwoFactorError('请输入6位验证码')
+      setTwoFactorError(language === 'zh' ? '请输入6位验证码' : 'Please enter 6-digit code')
       setTwoFactorLoading(false)
       return
     }
 
     const isValid = verifyTOTP(twoFactorSecret, twoFactorCode)
     if (!isValid) {
-      setTwoFactorError('验证码无效，请重试')
+      setTwoFactorError(language === 'zh' ? '验证码无效，请重试' : 'Invalid code, please try again')
       setTwoFactorLoading(false)
       return
     }
@@ -354,15 +361,15 @@ export default function SettingsPage() {
         .eq('id', user?.id)
 
       if (error) {
-        setTwoFactorError('启用两步验证失败')
+        setTwoFactorError(language === 'zh' ? '启用两步验证失败' : 'Failed to enable 2FA')
       } else {
         setTwoFactorEnabled(true)
-        showToast('两步验证已启用', 'success')
+        showToast(language === 'zh' ? '两步验证已启用' : '2FA enabled', 'success')
         setShow2FASettings(false)
         setTwoFactorStep('setup')
       }
     } catch (err) {
-      setTwoFactorError('启用两步验证失败')
+      setTwoFactorError(language === 'zh' ? '启用两步验证失败' : 'Failed to enable 2FA')
     } finally {
       setTwoFactorLoading(false)
     }
@@ -379,7 +386,7 @@ export default function SettingsPage() {
     if (result.error) {
       setEmailVerificationError(result.error)
     } else {
-      showToast('邮箱已更新', 'success')
+      showToast(language === 'zh' ? '邮箱已更新' : 'Email updated', 'success')
       setShowEmailSettings(false)
     }
   }
@@ -393,7 +400,7 @@ export default function SettingsPage() {
       showToast(result.error, 'error')
     } else {
       setEmailVerificationEnabled(true)
-      showToast('邮箱验证登录已启用', 'success')
+      showToast(language === 'zh' ? '邮箱验证登录已启用' : 'Email verification enabled', 'success')
       setShowEmailVerificationSettings(false)
     }
   }
@@ -407,14 +414,14 @@ export default function SettingsPage() {
       showToast(result.error, 'error')
     } else {
       setEmailVerificationEnabled(false)
-      showToast('邮箱验证登录已禁用', 'success')
+      showToast(language === 'zh' ? '邮箱验证登录已禁用' : 'Email verification disabled', 'success')
       setShowEmailVerificationSettings(false)
     }
   }
 
   const handleTestWebDAV = async () => {
     if (!webdavUrl || !webdavUsername || !webdavPassword) {
-      setWebdavError('请填写完整的 WebDAV 配置')
+      setWebdavError(language === 'zh' ? '请填写完整的 WebDAV 配置' : 'Please fill in all WebDAV fields')
       return
     }
 
@@ -435,12 +442,12 @@ export default function SettingsPage() {
       const data = await response.json()
 
       if (data.success) {
-        showToast('WebDAV 连接成功', 'success')
+        showToast(language === 'zh' ? 'WebDAV 连接成功' : 'WebDAV connected', 'success')
       } else {
-        setWebdavError(data.error || '连接失败')
+        setWebdavError(data.error || (language === 'zh' ? '连接失败' : 'Connection failed'))
       }
     } catch (err) {
-      setWebdavError('连接失败')
+      setWebdavError(language === 'zh' ? '连接失败' : 'Connection failed')
     } finally {
       setWebdavLoading(false)
     }
@@ -466,11 +473,11 @@ export default function SettingsPage() {
       if (error) {
         setWebdavError(error.message)
       } else {
-        showToast('WebDAV 配置已保存', 'success')
+        showToast(language === 'zh' ? 'WebDAV 配置已保存' : 'WebDAV settings saved', 'success')
         setShowWebDAVSettings(false)
       }
     } catch (err) {
-      setWebdavError('保存失败')
+      setWebdavError(language === 'zh' ? '保存失败' : 'Save failed')
     } finally {
       setWebdavLoading(false)
     }
@@ -496,12 +503,12 @@ export default function SettingsPage() {
       const data = await response.json()
 
       if (data.success) {
-        showToast(`备份成功: ${data.filename}`, 'success')
+        showToast(language === 'zh' ? `备份成功: ${data.filename}` : `Backup successful: ${data.filename}`, 'success')
       } else {
-        showToast(data.error || '备份失败', 'error')
+        showToast(data.error || (language === 'zh' ? '备份失败' : 'Backup failed'), 'error')
       }
     } catch (err) {
-      showToast('备份失败', 'error')
+      showToast(language === 'zh' ? '备份失败' : 'Backup failed', 'error')
     } finally {
       setBackupLoading(false)
     }
@@ -513,7 +520,7 @@ export default function SettingsPage() {
     setTwoFactorLoading(true)
 
     if (!twoFactorCode || twoFactorCode.length !== 6) {
-      setTwoFactorError('请输入6位验证码')
+      setTwoFactorError(language === 'zh' ? '请输入6位验证码' : 'Please enter 6-digit code')
       setTwoFactorLoading(false)
       return
     }
@@ -526,14 +533,14 @@ export default function SettingsPage() {
         .single()
 
       if (!userData?.two_factor_secret) {
-        setTwoFactorError('未找到两步验证信息')
+        setTwoFactorError(language === 'zh' ? '未找到两步验证信息' : '2FA info not found')
         setTwoFactorLoading(false)
         return
       }
 
       const isValid = verifyTOTP(userData.two_factor_secret, twoFactorCode)
       if (!isValid) {
-        setTwoFactorError('验证码无效')
+        setTwoFactorError(language === 'zh' ? '验证码无效' : 'Invalid code')
         setTwoFactorLoading(false)
         return
       }
@@ -547,15 +554,15 @@ export default function SettingsPage() {
         .eq('id', user?.id)
 
       if (error) {
-        setTwoFactorError('禁用两步验证失败')
+        setTwoFactorError(language === 'zh' ? '禁用两步验证失败' : 'Failed to disable 2FA')
       } else {
         setTwoFactorEnabled(false)
-        showToast('两步验证已禁用', 'success')
+        showToast(language === 'zh' ? '两步验证已禁用' : '2FA disabled', 'success')
         setShow2FASettings(false)
         setTwoFactorStep('setup')
       }
     } catch (err) {
-      setTwoFactorError('禁用两步验证失败')
+      setTwoFactorError(language === 'zh' ? '禁用两步验证失败' : 'Failed to disable 2FA')
     } finally {
       setTwoFactorLoading(false)
     }
@@ -563,94 +570,159 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="bg-surface border-b border-border sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 py-3">
+      <header className="bg-surface border-b border-border sticky top-0 z-40 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => router.push('/vault')}
-                className="flex items-center gap-2 text-textMuted hover:text-text"
-              >
-                <Icon name="arrow-left" className="w-5 h-5" />
-                返回
-              </button>
-              <h1 className="text-lg font-semibold text-text">设置</h1>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-gradient-to-br from-primary to-primaryLight rounded-lg flex items-center justify-center">
+                  <Icon name="lock" className="w-4 h-4 text-white" />
+                </div>
+                <span className="font-semibold text-text">MinpassVault</span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" onClick={() => router.push('/vault')} className="text-textMuted hover:text-text">
+                <Icon name="key" className="w-4 h-4 mr-1.5" />
+                {t('vault')}
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => router.push('/dashboard')} className="text-textMuted hover:text-text">
+                <Icon name="chart-pie" className="w-4 h-4 mr-1.5" />
+                {t('dashboard')}
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => router.push('/audit-logs')} className="text-textMuted hover:text-text">
+                <Icon name="history" className="w-4 h-4 mr-1.5" />
+                {t('auditLogs')}
+              </Button>
             </div>
           </div>
         </div>
       </header>
 
-      <div className="max-w-2xl mx-auto px-4 py-6 sm:py-8">
-        <div className="space-y-4 sm:space-y-6">
-          <div className="bg-gradient-to-br from-surface to-surfaceHover border border-border rounded-2xl p-6 shadow-lg">
-            <h2 className="text-lg font-medium text-text mb-4 flex items-center gap-2">
-              <Icon name="user" className="w-5 h-5 text-primary" />
-              账户信息
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-text mb-1">{t('settings')}</h1>
+          <p className="text-textMuted">{language === 'zh' ? '管理您的账户和应用配置' : 'Manage your account and app settings'}</p>
+        </div>
+
+        <div className="space-y-6">
+          <div className="bg-surface border border-border rounded-xl p-6 shadow-sm">
+            <h2 className="text-base font-semibold text-text mb-4 flex items-center gap-2">
+              <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                <Icon name="user" className="w-4 h-4 text-primary" />
+              </div>
+              {t('accountInfo')}
             </h2>
             <div className="space-y-3">
-              <div className="flex justify-between items-center p-3 bg-background/50 rounded-lg">
-                <span className="text-textMuted">用户名</span>
+              <div className="flex justify-between items-center py-2 border-b border-border">
+                <span className="text-textMuted text-sm">{t('username')}</span>
                 <span className="text-text font-medium">{user?.username}</span>
               </div>
-              <div className="flex justify-between items-center p-3 bg-background/50 rounded-lg">
-                <span className="text-textMuted">邮箱</span>
-                <span className="text-text font-medium">{user?.email || '未设置'}</span>
+              <div className="flex justify-between items-center py-2 border-b border-border">
+                <span className="text-textMuted text-sm">{t('email')}</span>
+                <span className="text-text font-medium">{user?.email || (language === 'zh' ? '未设置' : 'Not set')}</span>
               </div>
               <Button onClick={() => setShowEmailSettings(true)} variant="secondary" className="w-full mt-2">
-                设置邮箱
+                {language === 'zh' ? '设置邮箱' : 'Set Email'}
               </Button>
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-surface to-surfaceHover border border-border rounded-2xl p-6 shadow-lg">
-            <h2 className="text-lg font-medium text-text mb-4 flex items-center gap-2">
-              <Icon name="globe" className="w-5 h-5 text-primary" />
-              网站设置
+          <div className="bg-surface border border-border rounded-xl p-6 shadow-sm">
+            <h2 className="text-base font-semibold text-text mb-4 flex items-center gap-2">
+              <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                <Icon name="palette" className="w-4 h-4 text-primary" />
+              </div>
+              {t('appearance')}
             </h2>
             <div className="space-y-4">
-              <div className="flex justify-between items-center p-3 bg-background/50 rounded-lg">
+              <div className="flex justify-between items-center py-2 border-b border-border">
                 <div>
-                  <p className="text-text">网站标题</p>
-                  <p className="text-sm text-textMuted">{user?.siteTitle || 'SecureVault密码管理器'}</p>
+                  <span className="text-text text-sm font-medium">{t('theme')}</span>
+                  <p className="text-xs text-textMuted">{language === 'zh' ? '选择暗色或亮色主题' : 'Choose dark or light theme'}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setTheme('dark')}
+                    className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                      theme === 'dark' ? 'bg-primary text-white' : 'bg-surfaceHover text-textMuted hover:text-text'
+                    }`}
+                  >
+                    {t('darkMode')}
+                  </button>
+                  <button
+                    onClick={() => setTheme('light')}
+                    className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                      theme === 'light' ? 'bg-primary text-white' : 'bg-surfaceHover text-textMuted hover:text-text'
+                    }`}
+                  >
+                    {t('lightMode')}
+                  </button>
                 </div>
               </div>
-              <div className="flex justify-between items-center p-3 bg-background/50 rounded-lg">
+
+              <div className="flex justify-between items-center py-2 border-b border-border">
                 <div>
-                  <p className="text-text">网站图标</p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <img 
-                      src={user?.siteIcon || 'https://djkl.qzz.io/file/1.webp'} 
-                      alt="网站图标" 
-                      className="w-6 h-6 rounded"
-                    />
-                    <p className="text-sm text-textMuted truncate max-w-[200px]">
-                      {user?.siteIcon || 'https://djkl.qzz.io/file/1.webp'}
-                    </p>
-                  </div>
+                  <span className="text-text text-sm font-medium">{t('language')}</span>
+                  <p className="text-xs text-textMuted">{language === 'zh' ? '选择界面语言' : 'Select interface language'}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setLanguage('zh')}
+                    className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                      language === 'zh' ? 'bg-primary text-white' : 'bg-surfaceHover text-textMuted hover:text-text'
+                    }`}
+                  >
+                    中文
+                  </button>
+                  <button
+                    onClick={() => setLanguage('en')}
+                    className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                      language === 'en' ? 'bg-primary text-white' : 'bg-surfaceHover text-textMuted hover:text-text'
+                    }`}
+                  >
+                    English
+                  </button>
                 </div>
               </div>
-              <Button onClick={() => setShowSiteSettings(true)} variant="secondary" className="w-full mt-2">
-                修改网站设置
-              </Button>
+
+              <div className="flex justify-between items-center py-2">
+                <div>
+                  <span className="text-text text-sm font-medium">{t('font')}</span>
+                  <p className="text-xs text-textMuted">{language === 'zh' ? '选择界面字体' : 'Select interface font'}</p>
+                </div>
+                <select
+                  value={currentFont}
+                  onChange={(e) => handleFontChange(e.target.value)}
+                  className="bg-surfaceHover border border-border rounded-lg px-3 py-1.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  {FONTS.map(font => (
+                    <option key={font.id} value={font.id}>{font.name}</option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-surface to-surfaceHover border border-border rounded-2xl p-6 shadow-lg">
-            <h2 className="text-lg font-medium text-text mb-4 flex items-center gap-2">
-              <Icon name="lock" className="w-5 h-5 text-primary" />
-              安全设置
+          <div className="bg-surface border border-border rounded-xl p-6 shadow-sm">
+            <h2 className="text-base font-semibold text-text mb-4 flex items-center gap-2">
+              <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                <Icon name="lock" className="w-4 h-4 text-primary" />
+              </div>
+              {t('securitySettings')}
             </h2>
             <div className="space-y-3">
               <Button onClick={() => setShowChangePassword(true)} variant="secondary" className="w-full">
-                更改主密码
+                {t('changePassword')}
               </Button>
-              <div className="flex justify-between items-center p-3 bg-background/50 rounded-lg">
+              <div className="flex justify-between items-center py-2 border-b border-border">
                 <div className="flex items-center gap-2">
                   <Icon name="shield" className="w-4 h-4 text-textMuted" />
-                  <span className="text-sm text-text">两步验证</span>
+                  <span className="text-sm text-text">{t('twoFactorAuth')}</span>
                 </div>
-                <span className={`text-sm ${twoFactorEnabled ? 'text-success' : 'text-textMuted'}`}>
-                  {twoFactorEnabled ? '已启用' : '未启用'}
+                <span className={`text-sm font-medium ${twoFactorEnabled ? 'text-success' : 'text-textMuted'}`}>
+                  {twoFactorEnabled ? t('enabled') : t('disabled')}
                 </span>
               </div>
               <Button 
@@ -663,15 +735,15 @@ export default function SettingsPage() {
                 variant="secondary" 
                 className="w-full"
               >
-                {twoFactorEnabled ? '管理两步验证' : '启用两步验证'}
+                {twoFactorEnabled ? (language === 'zh' ? '管理两步验证' : 'Manage 2FA') : (language === 'zh' ? '启用两步验证' : 'Enable 2FA')}
               </Button>
-              <div className="flex justify-between items-center p-3 bg-background/50 rounded-lg">
+              <div className="flex justify-between items-center py-2 border-b border-border">
                 <div className="flex items-center gap-2">
                   <Icon name="envelope" className="w-4 h-4 text-textMuted" />
-                  <span className="text-sm text-text">邮箱验证登录</span>
+                  <span className="text-sm text-text">{t('emailVerification')}</span>
                 </div>
-                <span className={`text-sm ${emailVerificationEnabled ? 'text-success' : 'text-textMuted'}`}>
-                  {emailVerificationEnabled ? '已启用' : '未启用'}
+                <span className={`text-sm font-medium ${emailVerificationEnabled ? 'text-success' : 'text-textMuted'}`}>
+                  {emailVerificationEnabled ? t('enabled') : t('disabled')}
                 </span>
               </div>
               <Button 
@@ -679,68 +751,65 @@ export default function SettingsPage() {
                 variant="secondary" 
                 className="w-full"
               >
-                {emailVerificationEnabled ? '管理邮箱验证' : '启用邮箱验证'}
+                {emailVerificationEnabled ? (language === 'zh' ? '管理邮箱验证' : 'Manage Email Verification') : (language === 'zh' ? '启用邮箱验证' : 'Enable Email Verification')}
               </Button>
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-surface to-surfaceHover border border-border rounded-2xl p-6 shadow-lg">
-            <h2 className="text-lg font-medium text-text mb-4 flex items-center gap-2">
-              <Icon name="envelope" className="w-5 h-5 text-primary" />
-              邮件设置
+          <div className="bg-surface border border-border rounded-xl p-6 shadow-sm">
+            <h2 className="text-base font-semibold text-text mb-4 flex items-center gap-2">
+              <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                <Icon name="envelope" className="w-4 h-4 text-primary" />
+              </div>
+              {t('emailSettings')}
             </h2>
             <p className="text-sm text-textMuted mb-4">
-              配置邮件服务以支持密码重置功能
+              {language === 'zh' ? '配置邮件服务以支持密码重置功能' : 'Configure email service for password reset'}
             </p>
             <Button onClick={() => setShowSmtpSettings(true)} variant="secondary" className="w-full">
-              配置邮件服务
+              {language === 'zh' ? '配置邮件服务' : 'Configure Email Service'}
             </Button>
           </div>
 
-          <div className="bg-gradient-to-br from-surface to-surfaceHover border border-border rounded-2xl p-6 shadow-lg">
-            <h2 className="text-lg font-medium text-text mb-4 flex items-center gap-2">
-              <Icon name="database" className="w-5 h-5 text-primary" />
-              数据管理
+          <div className="bg-surface border border-border rounded-xl p-6 shadow-sm">
+            <h2 className="text-base font-semibold text-text mb-4 flex items-center gap-2">
+              <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                <Icon name="database" className="w-4 h-4 text-primary" />
+              </div>
+              {t('dataManagement')}
             </h2>
             <div className="space-y-3">
               <Button onClick={() => setShowCsvImport(true)} variant="secondary" className="w-full">
-                从 CSV 导入密码
+                {t('importFromCSV')}
               </Button>
-              <p className="text-xs text-textMuted">
-                支持 Chrome、Firefox 等浏览器导出的 CSV 格式
+              <p className="text-xs text-textMuted text-center">
+                {language === 'zh' ? '支持 Chrome、Firefox 等浏览器导出的 CSV 格式' : 'Supports CSV format from Chrome, Firefox, etc.'}
               </p>
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-surface to-surfaceHover border border-border rounded-2xl p-6 shadow-lg">
-            <h2 className="text-lg font-medium text-text mb-4 flex items-center gap-2">
-              <Icon name="upload" className="w-5 h-5 text-primary" />
-              WebDAV 备份
+          <div className="bg-surface border border-border rounded-xl p-6 shadow-sm">
+            <h2 className="text-base font-semibold text-text mb-4 flex items-center gap-2">
+              <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                <Icon name="upload" className="w-4 h-4 text-primary" />
+              </div>
+              {t('webdavBackup')}
             </h2>
-            <p className="text-sm text-textMuted mb-4">
-              配置 WebDAV 自动备份密码数据到云端
-            </p>
             <div className="space-y-3">
-              <div className="flex justify-between items-center p-3 bg-background/50 rounded-lg">
-                <div className="flex items-center gap-2">
-                  <Icon name="globe" className="w-4 h-4 text-textMuted" />
-                  <span className="text-sm text-text">WebDAV 状态</span>
-                </div>
-                <span className={`text-sm ${webdavUrl ? 'text-success' : 'text-textMuted'}`}>
-                  {webdavUrl ? '已配置' : '未配置'}
+              <div className="flex justify-between items-center py-2 border-b border-border">
+                <span className="text-textMuted text-sm">{language === 'zh' ? 'WebDAV 状态' : 'WebDAV Status'}</span>
+                <span className={`text-sm font-medium ${webdavUrl ? 'text-success' : 'text-textMuted'}`}>
+                  {webdavUrl ? t('configured') : t('notConfigured')}
                 </span>
               </div>
-              <div className="flex justify-between items-center p-3 bg-background/50 rounded-lg">
-                <div className="flex items-center gap-2">
-                  <Icon name="shield" className="w-4 h-4 text-textMuted" />
-                  <span className="text-sm text-text">自动备份</span>
-                </div>
-                <span className={`text-sm ${webdavAutoBackup ? 'text-success' : 'text-textMuted'}`}>
-                  {webdavAutoBackup ? '已启用' : '未启用'}
+              <div className="flex justify-between items-center py-2 border-b border-border">
+                <span className="text-textMuted text-sm">{t('autoBackup')}</span>
+                <span className={`text-sm font-medium ${webdavAutoBackup ? 'text-success' : 'text-textMuted'}`}>
+                  {webdavAutoBackup ? t('enabled') : t('disabled')}
                 </span>
               </div>
               <Button onClick={() => setShowWebDAVSettings(true)} variant="secondary" className="w-full">
-                配置 WebDAV
+                {language === 'zh' ? '配置 WebDAV' : 'Configure WebDAV'}
               </Button>
               <Button 
                 onClick={handleBackup} 
@@ -749,76 +818,30 @@ export default function SettingsPage() {
                 loading={backupLoading}
                 disabled={!webdavUrl}
               >
-                立即备份
+                {t('backupNow')}
               </Button>
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-danger/10 to-red-900/10 border border-danger/30 rounded-2xl p-6 shadow-lg">
-            <h2 className="text-lg font-medium text-danger mb-2 flex items-center gap-2">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-              危险区域
+          <div className="bg-danger/5 border border-danger/20 rounded-xl p-6">
+            <h2 className="text-base font-semibold text-danger mb-2 flex items-center gap-2">
+              <Icon name="trash" className="w-5 h-5" />
+              {t('dangerZone')}
             </h2>
             <p className="text-sm text-textMuted mb-4">
-              重置数据库将删除所有用户数据和密码，此操作不可恢复。
+              {t('resetWarning')}
             </p>
             <Button variant="danger" onClick={() => setShowReset(true)}>
-              重置数据库
+              {t('resetDatabase')}
             </Button>
           </div>
         </div>
       </div>
 
-      <Modal isOpen={showSiteSettings} onClose={() => setShowSiteSettings(false)} title="网站设置" size="sm">
-        <form onSubmit={handleSiteSettings} className="space-y-4">
-          <Input
-            type="text"
-            label="网站标题"
-            placeholder="请输入网站标题"
-            value={siteTitle}
-            onChange={(e) => setSiteTitle(e.target.value)}
-            required
-          />
-          <div>
-            <label className="block text-sm font-medium text-text mb-1">网站图标 URL</label>
-            <Input
-              type="url"
-              placeholder="请输入图标URL"
-              value={siteIcon}
-              onChange={(e) => setSiteIcon(e.target.value)}
-              required
-            />
-            {siteIcon && (
-              <div className="mt-2 flex items-center gap-2">
-                <span className="text-xs text-textMuted">预览:</span>
-                <img src={siteIcon} alt="图标预览" className="w-8 h-8 rounded" onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = 'none'
-                }} />
-              </div>
-            )}
-          </div>
-          {siteSettingsError && (
-            <div className="p-3 bg-danger/10 border border-danger/20 rounded-lg text-danger text-sm">
-              {siteSettingsError}
-            </div>
-          )}
-          <div className="flex gap-3">
-            <Button type="button" variant="secondary" onClick={() => setShowSiteSettings(false)} className="flex-1">
-              取消
-            </Button>
-            <Button type="submit" className="flex-1" loading={siteSettingsLoading}>
-              保存
-            </Button>
-          </div>
-        </form>
-      </Modal>
-
-      <Modal isOpen={showSmtpSettings} onClose={() => setShowSmtpSettings(false)} title="邮件服务配置" size="sm">
+      <Modal isOpen={showSmtpSettings} onClose={() => setShowSmtpSettings(false)} title={language === 'zh' ? '邮件服务配置' : 'Email Service Configuration'} size="sm">
         <form onSubmit={handleEmailSettings} className="space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-textMuted">选择邮件服务</label>
+            <label className="text-sm font-medium text-textMuted">{language === 'zh' ? '选择邮件服务' : 'Select Email Service'}</label>
             <div className="flex gap-2">
               <button
                 type="button"
@@ -849,14 +872,14 @@ export default function SettingsPage() {
             <>
               <Input
                 type="text"
-                label="SMTP 服务器"
-                placeholder="例如: smtp.gmail.com"
+                label={language === 'zh' ? 'SMTP 服务器' : 'SMTP Server'}
+                placeholder="smtp.gmail.com"
                 value={smtpHost}
                 onChange={(e) => setSmtpHost(e.target.value)}
               />
               <Input
                 type="number"
-                label="端口"
+                label={language === 'zh' ? '端口' : 'Port'}
                 placeholder="587"
                 value={smtpPort}
                 onChange={(e) => setSmtpPort(e.target.value)}
@@ -869,28 +892,26 @@ export default function SettingsPage() {
                   onChange={(e) => setSmtpSecure(e.target.checked)}
                   className="w-4 h-4 rounded border-border bg-surface text-primary"
                 />
-                <label htmlFor="smtpSecure" className="text-sm text-text">
-                  使用 SSL/TLS
-                </label>
+                <label htmlFor="smtpSecure" className="text-sm text-text">SSL/TLS</label>
               </div>
               <Input
                 type="text"
-                label="用户名"
-                placeholder="邮箱地址"
+                label={language === 'zh' ? '用户名' : 'Username'}
+                placeholder={language === 'zh' ? '邮箱地址' : 'Email address'}
                 value={smtpUser}
                 onChange={(e) => setSmtpUser(e.target.value)}
               />
               <Input
                 type="password"
-                label="密码"
-                placeholder="邮箱密码或应用专用密码"
+                label={t('password')}
+                placeholder={language === 'zh' ? '邮箱密码或应用专用密码' : 'Password or app password'}
                 value={smtpPass}
                 onChange={(e) => setSmtpPass(e.target.value)}
               />
               <Input
                 type="email"
-                label="发件人地址"
-                placeholder="例如: noreply@yourdomain.com"
+                label={language === 'zh' ? '发件人地址' : 'From Address'}
+                placeholder="noreply@yourdomain.com"
                 value={smtpFrom}
                 onChange={(e) => setSmtpFrom(e.target.value)}
               />
@@ -898,11 +919,11 @@ export default function SettingsPage() {
           ) : (
             <>
               <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg text-sm">
-                <p className="font-medium text-text mb-1">💡 如何获取 Resend API Key</p>
+                <p className="font-medium text-text mb-1">{language === 'zh' ? '如何获取 Resend API Key' : 'How to get Resend API Key'}</p>
                 <ol className="list-decimal list-inside space-y-1 text-xs text-textMuted">
-                  <li>访问 <a href="https://resend.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">resend.com</a> 注册账号</li>
-                  <li>在 Dashboard 中创建 API Key</li>
-                  <li>复制 API Key 粘贴到下方</li>
+                  <li>{language === 'zh' ? '访问' : 'Visit'} <a href="https://resend.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">resend.com</a></li>
+                  <li>{language === 'zh' ? '在 Dashboard 中创建 API Key' : 'Create API Key in Dashboard'}</li>
+                  <li>{language === 'zh' ? '复制 API Key 粘贴到下方' : 'Copy and paste API Key below'}</li>
                 </ol>
               </div>
               <Input
@@ -914,14 +935,11 @@ export default function SettingsPage() {
               />
               <Input
                 type="email"
-                label="发件人邮箱（可选）"
-                placeholder="例如: noreply@yourdomain.com"
+                label={language === 'zh' ? '发件人邮箱（可选）' : 'From Email (optional)'}
+                placeholder="noreply@yourdomain.com"
                 value={resendFrom}
                 onChange={(e) => setResendFrom(e.target.value)}
               />
-              <p className="text-xs text-textMuted">
-                留空则使用 Resend 默认发件地址 onboarding@resend.dev
-              </p>
             </>
           )}
 
@@ -932,37 +950,37 @@ export default function SettingsPage() {
           )}
           <div className="flex gap-3">
             <Button type="button" variant="secondary" onClick={() => setShowSmtpSettings(false)} className="flex-1">
-              取消
+              {t('cancel')}
             </Button>
             <Button type="submit" className="flex-1" loading={emailSettingsLoading}>
-              保存配置
+              {t('saveConfig')}
             </Button>
           </div>
         </form>
       </Modal>
 
-      <Modal isOpen={showChangePassword} onClose={() => setShowChangePassword(false)} title="更改主密码" size="sm">
+      <Modal isOpen={showChangePassword} onClose={() => setShowChangePassword(false)} title={t('changePassword')} size="sm">
         <form onSubmit={handleChangePassword} className="space-y-4">
           <Input
             type="password"
-            label="原密码"
-            placeholder="请输入原密码"
+            label={t('oldPassword')}
+            placeholder={language === 'zh' ? '请输入原密码' : 'Enter old password'}
             value={oldPassword}
             onChange={(e) => setOldPassword(e.target.value)}
             required
           />
           <Input
             type="password"
-            label="新密码"
-            placeholder="请输入新密码"
+            label={t('newPassword')}
+            placeholder={language === 'zh' ? '请输入新密码' : 'Enter new password'}
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             required
           />
           <Input
             type="password"
-            label="确认新密码"
-            placeholder="再次输入新密码"
+            label={t('confirmPassword')}
+            placeholder={language === 'zh' ? '再次输入新密码' : 'Enter new password again'}
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
@@ -974,26 +992,26 @@ export default function SettingsPage() {
           )}
           <div className="flex gap-3">
             <Button type="button" variant="secondary" onClick={() => setShowChangePassword(false)} className="flex-1">
-              取消
+              {t('cancel')}
             </Button>
             <Button type="submit" className="flex-1" loading={passwordLoading}>
-              确认更改
+              {language === 'zh' ? '确认更改' : 'Confirm Change'}
             </Button>
           </div>
         </form>
       </Modal>
 
-      <Modal isOpen={showCsvImport} onClose={() => setShowCsvImport(false)} title="从 CSV 导入" size="sm">
+      <Modal isOpen={showCsvImport} onClose={() => setShowCsvImport(false)} title={t('importFromCSV')} size="sm">
         <div className="space-y-4">
           <p className="text-sm text-textMuted">
-            选择一个 CSV 文件导入密码。支持的列名：name, url, username, password, notes
+            {language === 'zh' ? '选择一个 CSV 文件导入密码。支持的列名：name, url, username, password, notes' : 'Select a CSV file to import. Supported columns: name, url, username, password, notes'}
           </p>
           <label className="block">
             <div className="w-full bg-surface border border-border border-dashed rounded-lg p-8 text-center cursor-pointer hover:border-primaryLight transition-colors">
               <svg className="w-12 h-12 mx-auto text-textMuted mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
               </svg>
-              <span className="text-textMuted">点击选择 CSV 文件</span>
+              <span className="text-textMuted">{language === 'zh' ? '点击选择 CSV 文件' : 'Click to select CSV file'}</span>
             </div>
             <input
               type="file"
@@ -1004,25 +1022,25 @@ export default function SettingsPage() {
             />
           </label>
           <Button variant="secondary" onClick={() => setShowCsvImport(false)} className="w-full">
-            关闭
+            {t('close')}
           </Button>
         </div>
       </Modal>
 
-      <Modal isOpen={showReset} onClose={() => setShowReset(false)} title="确认重置数据库" size="sm">
+      <Modal isOpen={showReset} onClose={() => setShowReset(false)} title={language === 'zh' ? '确认重置数据库' : 'Confirm Reset'} size="sm">
         <div className="space-y-4">
           <div className="p-4 bg-danger/10 border border-danger/20 rounded-lg">
-            <p className="text-danger font-medium mb-2">⚠️ 警告</p>
+            <p className="text-danger font-medium mb-2">{language === 'zh' ? '警告' : 'Warning'} ⚠️</p>
             <p className="text-sm text-textMuted">
-              此操作将永久删除所有数据，包括用户账户和所有密码。此操作不可恢复！
+              {t('resetWarning')}
             </p>
           </div>
           <div className="flex gap-3">
             <Button variant="secondary" onClick={() => setShowReset(false)} className="flex-1">
-              取消
+              {t('cancel')}
             </Button>
             <Button variant="danger" onClick={handleReset} loading={resetLoading} className="flex-1">
-              确认重置
+              {t('resetDatabase')}
             </Button>
           </div>
         </div>
@@ -1036,18 +1054,20 @@ export default function SettingsPage() {
           setTwoFactorCode('')
           setTwoFactorError('')
         }} 
-        title={twoFactorEnabled ? '管理两步验证' : '启用两步验证'} 
+        title={twoFactorEnabled ? (language === 'zh' ? '管理两步验证' : 'Manage 2FA') : (language === 'zh' ? '启用两步验证' : 'Enable 2FA')} 
         size="sm"
       >
         {twoFactorStep === 'setup' && (
           <div className="space-y-4">
             <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg">
               <p className="text-sm text-text mb-2">
-                两步验证可以为您的账户添加额外的安全保护。启用后，登录时需要输入验证器应用生成的6位验证码。
+                {language === 'zh' 
+                  ? '两步验证可以为您的账户添加额外的安全保护。启用后，登录时需要输入验证器应用生成的6位验证码。'
+                  : '2FA adds extra security. After enabling, you need to enter a 6-digit code from an authenticator app when logging in.'}
               </p>
             </div>
             <div className="space-y-2 text-sm text-textMuted">
-              <p>推荐验证器应用：</p>
+              <p>{language === 'zh' ? '推荐验证器应用：' : 'Recommended authenticator apps:'}</p>
               <ul className="list-disc list-inside space-y-1">
                 <li>Google Authenticator</li>
                 <li>Microsoft Authenticator</li>
@@ -1055,7 +1075,7 @@ export default function SettingsPage() {
               </ul>
             </div>
             <Button onClick={handleEnable2FA} className="w-full">
-              开始设置
+              {language === 'zh' ? '开始设置' : 'Start Setup'}
             </Button>
           </div>
         )}
@@ -1063,7 +1083,7 @@ export default function SettingsPage() {
         {twoFactorStep === 'verify' && (
           <form onSubmit={handleVerify2FA} className="space-y-4">
             <div className="p-4 bg-surface border border-border rounded-lg">
-              <p className="text-sm text-textMuted mb-3">1. 使用验证器应用扫描下方二维码：</p>
+              <p className="text-sm text-textMuted mb-3">1. {language === 'zh' ? '使用验证器应用扫描下方二维码：' : 'Scan QR code with authenticator app:'}</p>
               <div className="flex justify-center mb-3">
                 <img 
                   src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(twoFactorQrUri)}`}
@@ -1071,18 +1091,18 @@ export default function SettingsPage() {
                   className="w-48 h-48 rounded-lg"
                 />
               </div>
-              <p className="text-xs text-textMuted text-center mb-3">或手动输入密钥：</p>
+              <p className="text-xs text-textMuted text-center mb-3">{language === 'zh' ? '或手动输入密钥：' : 'Or enter key manually:'}</p>
               <code className="block p-2 bg-background rounded text-xs text-center break-all select-all">
                 {twoFactorSecret}
               </code>
             </div>
             <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg text-sm">
-              <p className="text-text">2. 输入验证器应用显示的6位验证码：</p>
+              <p className="text-text">2. {language === 'zh' ? '输入验证器应用显示的6位验证码：' : 'Enter 6-digit code from app:'}</p>
             </div>
             <Input
               type="text"
-              label="验证码"
-              placeholder="请输入6位验证码"
+              label={language === 'zh' ? '验证码' : 'Code'}
+              placeholder={language === 'zh' ? '请输入6位验证码' : 'Enter 6-digit code'}
               value={twoFactorCode}
               onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
               maxLength={6}
@@ -1100,10 +1120,10 @@ export default function SettingsPage() {
                 onClick={() => setTwoFactorStep('setup')} 
                 className="flex-1"
               >
-                返回
+                {t('back')}
               </Button>
               <Button type="submit" className="flex-1" loading={twoFactorLoading}>
-                确认启用
+                {language === 'zh' ? '确认启用' : 'Confirm Enable'}
               </Button>
             </div>
           </form>
@@ -1113,13 +1133,15 @@ export default function SettingsPage() {
           <form onSubmit={handleDisable2FA} className="space-y-4">
             <div className="p-4 bg-warning/10 border border-warning/20 rounded-lg">
               <p className="text-sm text-text">
-                禁用两步验证将降低账户安全性。请输入当前验证器应用显示的验证码以确认禁用。
+                {language === 'zh' 
+                  ? '禁用两步验证将降低账户安全性。请输入当前验证器应用显示的验证码以确认禁用。'
+                  : 'Disabling 2FA will reduce account security. Enter current code to confirm.'}
               </p>
             </div>
             <Input
               type="text"
-              label="验证码"
-              placeholder="请输入6位验证码"
+              label={language === 'zh' ? '验证码' : 'Code'}
+              placeholder={language === 'zh' ? '请输入6位验证码' : 'Enter 6-digit code'}
               value={twoFactorCode}
               onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
               maxLength={6}
@@ -1137,25 +1159,25 @@ export default function SettingsPage() {
                 onClick={() => setShow2FASettings(false)} 
                 className="flex-1"
               >
-                取消
+                {t('cancel')}
               </Button>
               <Button type="submit" variant="danger" className="flex-1" loading={twoFactorLoading}>
-                禁用两步验证
+                {language === 'zh' ? '禁用两步验证' : 'Disable 2FA'}
               </Button>
             </div>
           </form>
         )}
       </Modal>
 
-      <Modal isOpen={showEmailSettings} onClose={() => setShowEmailSettings(false)} title="设置邮箱" size="sm">
+      <Modal isOpen={showEmailSettings} onClose={() => setShowEmailSettings(false)} title={language === 'zh' ? '设置邮箱' : 'Set Email'} size="sm">
         <form onSubmit={handleUpdateEmail} className="space-y-4">
           <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg text-sm">
-            <p className="text-text">邮箱用于密码重置和邮箱验证登录功能</p>
+            <p className="text-text">{language === 'zh' ? '邮箱用于密码重置和邮箱验证登录功能' : 'Email is used for password reset and verification'}</p>
           </div>
           <Input
             type="email"
-            label="邮箱地址"
-            placeholder="请输入邮箱地址"
+            label={t('email')}
+            placeholder={language === 'zh' ? '请输入邮箱地址' : 'Enter email address'}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -1167,10 +1189,10 @@ export default function SettingsPage() {
           )}
           <div className="flex gap-3">
             <Button type="button" variant="secondary" onClick={() => setShowEmailSettings(false)} className="flex-1">
-              取消
+              {t('cancel')}
             </Button>
             <Button type="submit" className="flex-1" loading={emailVerificationLoading}>
-              保存
+              {t('save')}
             </Button>
           </div>
         </form>
@@ -1179,7 +1201,7 @@ export default function SettingsPage() {
       <Modal 
         isOpen={showEmailVerificationSettings} 
         onClose={() => setShowEmailVerificationSettings(false)} 
-        title={emailVerificationEnabled ? '管理邮箱验证登录' : '启用邮箱验证登录'} 
+        title={emailVerificationEnabled ? (language === 'zh' ? '管理邮箱验证登录' : 'Manage Email Verification') : (language === 'zh' ? '启用邮箱验证登录' : 'Enable Email Verification')} 
         size="sm"
       >
         <div className="space-y-4">
@@ -1187,15 +1209,17 @@ export default function SettingsPage() {
             <>
               <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg">
                 <p className="text-sm text-text mb-2">
-                  启用邮箱验证登录后，每次登录时将向您的邮箱发送验证码，提供额外的安全保护。
+                  {language === 'zh' 
+                    ? '启用邮箱验证登录后，每次登录时将向您的邮箱发送验证码，提供额外的安全保护。'
+                    : 'After enabling, a verification code will be sent to your email on each login.'}
                 </p>
                 <p className="text-xs text-textMuted">
-                  注意：需要先设置邮箱地址并配置邮件服务
+                  {language === 'zh' ? '注意：需要先设置邮箱地址并配置邮件服务' : 'Note: Email must be set and email service configured first'}
                 </p>
               </div>
               {!user?.email && (
                 <div className="p-3 bg-warning/10 border border-warning/20 rounded-lg text-sm text-warning">
-                  请先在账户信息中设置邮箱地址
+                  {language === 'zh' ? '请先在账户信息中设置邮箱地址' : 'Please set email address first'}
                 </div>
               )}
               <Button 
@@ -1204,19 +1228,21 @@ export default function SettingsPage() {
                 loading={emailVerificationLoading}
                 disabled={!user?.email}
               >
-                启用邮箱验证登录
+                {language === 'zh' ? '启用邮箱验证登录' : 'Enable Email Verification'}
               </Button>
             </>
           ) : (
             <>
               <div className="p-4 bg-success/10 border border-success/20 rounded-lg">
                 <p className="text-sm text-text">
-                  邮箱验证登录已启用。每次登录时，系统将向您的邮箱发送验证码。
+                  {language === 'zh' 
+                    ? '邮箱验证登录已启用。每次登录时，系统将向您的邮箱发送验证码。'
+                    : 'Email verification is enabled. A code will be sent on each login.'}
                 </p>
               </div>
               <div className="p-3 bg-warning/10 border border-warning/20 rounded-lg">
                 <p className="text-sm text-textMuted">
-                  禁用后，登录时将不再需要邮箱验证码。
+                  {language === 'zh' ? '禁用后，登录时将不再需要邮箱验证码。' : 'After disabling, email code will not be required.'}
                 </p>
               </div>
               <Button 
@@ -1225,39 +1251,39 @@ export default function SettingsPage() {
                 className="w-full" 
                 loading={emailVerificationLoading}
               >
-                禁用邮箱验证登录
+                {language === 'zh' ? '禁用邮箱验证登录' : 'Disable Email Verification'}
               </Button>
             </>
           )}
           <Button variant="secondary" onClick={() => setShowEmailVerificationSettings(false)} className="w-full">
-            关闭
+            {t('close')}
           </Button>
         </div>
       </Modal>
 
-      <Modal isOpen={showWebDAVSettings} onClose={() => setShowWebDAVSettings(false)} title="WebDAV 配置" size="sm">
+      <Modal isOpen={showWebDAVSettings} onClose={() => setShowWebDAVSettings(false)} title={language === 'zh' ? 'WebDAV 配置' : 'WebDAV Configuration'} size="sm">
         <div className="space-y-4">
           <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg text-sm">
-            <p className="text-text">WebDAV 用于自动备份密码数据到云端存储服务</p>
+            <p className="text-text">{language === 'zh' ? 'WebDAV 用于自动备份密码数据到云端存储服务' : 'WebDAV is used for automatic backup to cloud storage'}</p>
           </div>
           <Input
             type="url"
-            label="WebDAV 地址"
+            label="WebDAV URL"
             placeholder="https://your-webdav-server.com/dav/"
             value={webdavUrl}
             onChange={(e) => setWebdavUrl(e.target.value)}
           />
           <Input
             type="text"
-            label="用户名"
-            placeholder="WebDAV 用户名"
+            label={t('username')}
+            placeholder="WebDAV username"
             value={webdavUsername}
             onChange={(e) => setWebdavUsername(e.target.value)}
           />
           <Input
             type="password"
-            label="密码"
-            placeholder="WebDAV 密码"
+            label={t('password')}
+            placeholder="WebDAV password"
             value={webdavPassword}
             onChange={(e) => setWebdavPassword(e.target.value)}
           />
@@ -1270,7 +1296,7 @@ export default function SettingsPage() {
               className="w-4 h-4 rounded border-border bg-surface text-primary"
             />
             <label htmlFor="webdavAutoBackup" className="text-sm text-text">
-              启用自动备份（每小时）
+              {language === 'zh' ? '启用自动备份（每小时）' : 'Enable auto backup (hourly)'}
             </label>
           </div>
           {webdavError && (
@@ -1286,7 +1312,7 @@ export default function SettingsPage() {
               className="flex-1"
               loading={webdavLoading}
             >
-              测试连接
+              {t('testConnection')}
             </Button>
             <Button 
               type="button"
@@ -1294,7 +1320,7 @@ export default function SettingsPage() {
               className="flex-1" 
               loading={webdavLoading}
             >
-              保存配置
+              {t('saveConfig')}
             </Button>
           </div>
         </div>

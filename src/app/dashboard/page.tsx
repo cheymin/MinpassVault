@@ -1,8 +1,11 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { useVault } from '@/contexts/VaultContext'
+import { useTheme } from '@/contexts/ThemeContext'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { Button } from '@/components/ui/Button'
 import { Icon } from '@/components/ui/Icon'
 import { createClient } from '@supabase/supabase-js'
@@ -45,6 +48,9 @@ function calculatePasswordStrength(password: string): 'weak' | 'medium' | 'stron
 function DashboardContent() {
   const { user } = useAuth()
   const { items } = useVault()
+  const router = useRouter()
+  const { theme, toggleTheme } = useTheme()
+  const { language, setLanguage, t } = useLanguage()
   const [passwordStrength, setPasswordStrength] = useState<PasswordStrength>({
     weak: 0,
     medium: 0,
@@ -125,81 +131,120 @@ function DashboardContent() {
     ? Math.round(((passwordStrength.strong + passwordStrength.veryStrong) / totalPasswords) * 100) 
     : 0
 
-  const ACTION_LABELS: Record<string, string> = {
-    login: '登录',
-    logout: '登出',
-    item_create: '创建密码项',
-    item_update: '更新密码项',
-    item_delete: '删除密码项',
+  const ACTION_LABELS: Record<string, Record<string, string>> = {
+    login: { zh: '登录', en: 'Login' },
+    logout: { zh: '登出', en: 'Logout' },
+    item_create: { zh: '创建密码项', en: 'Create Item' },
+    item_update: { zh: '更新密码项', en: 'Update Item' },
+    item_delete: { zh: '删除密码项', en: 'Delete Item' },
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-surface to-background p-4 sm:p-6 lg:p-8">
-      <div className="max-w-6xl mx-auto">
-        <div className="mb-6">
+    <div className="min-h-screen bg-background">
+      <header className="bg-surface border-b border-border sticky top-0 z-40 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-text mb-2">仪表盘</h1>
-              <p className="text-textMuted">密码安全概览</p>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-gradient-to-br from-primary to-primaryLight rounded-lg flex items-center justify-center">
+                  <Icon name="lock" className="w-4 h-4 text-white" />
+                </div>
+                <span className="font-semibold text-text">MinpassVault</span>
+              </div>
             </div>
-            <Button onClick={() => window.location.href = '/vault'} variant="secondary">
-              <Icon name="arrow-left" className="w-4 h-4 mr-2" />
-              返回保险库
-            </Button>
+
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" onClick={() => router.push('/vault')} className="text-textMuted hover:text-text">
+                <Icon name="key" className="w-4 h-4 mr-1.5" />
+                {t('vault')}
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => router.push('/audit-logs')} className="text-textMuted hover:text-text">
+                <Icon name="history" className="w-4 h-4 mr-1.5" />
+                {t('auditLogs')}
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => router.push('/settings')} className="text-textMuted hover:text-text">
+                <Icon name="cog" className="w-4 h-4 mr-1.5" />
+                {t('settings')}
+              </Button>
+            </div>
           </div>
         </div>
+      </header>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <div className="bg-surface border border-border rounded-xl p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-textMuted text-sm">总密码数</span>
-              <Icon name="key" className="w-5 h-5 text-primary" />
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-text mb-1">{t('dashboard')}</h1>
+          <p className="text-textMuted">{language === 'zh' ? '密码安全概览与统计分析' : 'Password security overview and statistics'}</p>
+        </div>
+
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div className="bg-surface border border-border rounded-xl p-5 shadow-sm hover:shadow-card-hover transition-shadow">
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                <Icon name="key" className="w-5 h-5 text-primary" />
+              </div>
             </div>
-            <p className="text-3xl font-bold text-text">{vaultStats.totalItems}</p>
+            <p className="text-3xl font-bold text-text mb-1">{vaultStats.totalItems}</p>
+            <p className="text-sm text-textMuted">{t('totalPasswords')}</p>
           </div>
 
-          <div className="bg-surface border border-border rounded-xl p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-textMuted text-sm">登录项</span>
-              <Icon name="user" className="w-5 h-5 text-success" />
+          <div className="bg-surface border border-border rounded-xl p-5 shadow-sm hover:shadow-card-hover transition-shadow">
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-10 h-10 bg-success/10 rounded-lg flex items-center justify-center">
+                <Icon name="user" className="w-5 h-5 text-success" />
+              </div>
             </div>
-            <p className="text-3xl font-bold text-text">{vaultStats.loginItems}</p>
+            <p className="text-3xl font-bold text-text mb-1">{vaultStats.loginItems}</p>
+            <p className="text-sm text-textMuted">{t('loginItems')}</p>
           </div>
 
-          <div className="bg-surface border border-border rounded-xl p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-textMuted text-sm">收藏项</span>
-              <Icon name="star" className="w-5 h-5 text-warning" />
+          <div className="bg-surface border border-border rounded-xl p-5 shadow-sm hover:shadow-card-hover transition-shadow">
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-10 h-10 bg-warning/10 rounded-lg flex items-center justify-center">
+                <Icon name="star" className="w-5 h-5 text-warning" />
+              </div>
             </div>
-            <p className="text-3xl font-bold text-text">{vaultStats.favorites}</p>
+            <p className="text-3xl font-bold text-text mb-1">{vaultStats.favorites}</p>
+            <p className="text-sm text-textMuted">{t('favorites')}</p>
           </div>
 
-          <div className="bg-surface border border-border rounded-xl p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-textMuted text-sm">本周新增</span>
-              <Icon name="plus" className="w-5 h-5 text-primary" />
+          <div className="bg-surface border border-border rounded-xl p-5 shadow-sm hover:shadow-card-hover transition-shadow">
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-10 h-10 bg-primaryLight/20 rounded-lg flex items-center justify-center">
+                <Icon name="plus" className="w-5 h-5 text-primaryLight" />
+              </div>
             </div>
-            <p className="text-3xl font-bold text-text">{vaultStats.recentlyAdded}</p>
+            <p className="text-3xl font-bold text-text mb-1">{vaultStats.recentlyAdded}</p>
+            <p className="text-sm text-textMuted">{t('addedThisWeek')}</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <div className="bg-surface border border-border rounded-xl p-6">
-            <h2 className="text-lg font-semibold text-text mb-4 flex items-center gap-2">
-              <Icon name="shield-alt" className="w-5 h-5 text-primary" />
-              密码强度分析
-            </h2>
-            
-            <div className="mb-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-textMuted text-sm">安全评分</span>
-                <span className="text-text font-medium">{strengthPercentage}%</span>
+          <div className="bg-surface border border-border rounded-xl p-6 shadow-sm">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                <Icon name="shield-alt" className="w-5 h-5 text-primary" />
               </div>
-              <div className="w-full bg-background rounded-full h-3">
+              <div>
+                <h2 className="text-lg font-semibold text-text">{t('passwordStrength')}</h2>
+                <p className="text-sm text-textMuted">{language === 'zh' ? '检测您的密码安全程度' : 'Check your password security level'}</p>
+              </div>
+            </div>
+            
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-textMuted text-sm">{t('securityScore')}</span>
+                <span className={`text-lg font-bold ${
+                  strengthPercentage >= 70 ? 'text-success' : 
+                  strengthPercentage >= 40 ? 'text-warning' : 'text-danger'
+                }`}>{strengthPercentage}%</span>
+              </div>
+              <div className="w-full bg-background rounded-full h-2.5 overflow-hidden">
                 <div 
-                  className={`h-3 rounded-full transition-all ${
-                    strengthPercentage >= 70 ? 'bg-success' : 
-                    strengthPercentage >= 40 ? 'bg-warning' : 'bg-danger'
+                  className={`h-full rounded-full transition-all duration-500 ${
+                    strengthPercentage >= 70 ? 'bg-gradient-to-r from-success to-emerald-400' : 
+                    strengthPercentage >= 40 ? 'bg-gradient-to-r from-warning to-amber-400' : 
+                    'bg-gradient-to-r from-danger to-red-400'
                   }`}
                   style={{ width: `${strengthPercentage}%` }}
                 />
@@ -207,58 +252,80 @@ function DashboardContent() {
             </div>
 
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
+              <div className="flex items-center justify-between p-3 bg-background rounded-lg">
+                <div className="flex items-center gap-3">
                   <div className="w-3 h-3 rounded-full bg-danger" />
-                  <span className="text-sm text-textMuted">弱密码</span>
+                  <span className="text-sm text-text">{t('weak')}</span>
                 </div>
-                <span className="text-text font-medium">{passwordStrength.weak}</span>
+                <span className={`text-sm font-semibold px-2.5 py-0.5 rounded-full ${
+                  passwordStrength.weak > 0 ? 'bg-danger/10 text-danger' : 'bg-surfaceHover text-textMuted'
+                }`}>{passwordStrength.weak}</span>
               </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
+              <div className="flex items-center justify-between p-3 bg-background rounded-lg">
+                <div className="flex items-center gap-3">
                   <div className="w-3 h-3 rounded-full bg-warning" />
-                  <span className="text-sm text-textMuted">中等密码</span>
+                  <span className="text-sm text-text">{t('medium')}</span>
                 </div>
-                <span className="text-text font-medium">{passwordStrength.medium}</span>
+                <span className={`text-sm font-semibold px-2.5 py-0.5 rounded-full ${
+                  passwordStrength.medium > 0 ? 'bg-warning/10 text-warning' : 'bg-surfaceHover text-textMuted'
+                }`}>{passwordStrength.medium}</span>
               </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
+              <div className="flex items-center justify-between p-3 bg-background rounded-lg">
+                <div className="flex items-center gap-3">
                   <div className="w-3 h-3 rounded-full bg-success" />
-                  <span className="text-sm text-textMuted">强密码</span>
+                  <span className="text-sm text-text">{t('strong')}</span>
                 </div>
-                <span className="text-text font-medium">{passwordStrength.strong}</span>
+                <span className={`text-sm font-semibold px-2.5 py-0.5 rounded-full ${
+                  passwordStrength.strong > 0 ? 'bg-success/10 text-success' : 'bg-surfaceHover text-textMuted'
+                }`}>{passwordStrength.strong}</span>
               </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
+              <div className="flex items-center justify-between p-3 bg-background rounded-lg">
+                <div className="flex items-center gap-3">
                   <div className="w-3 h-3 rounded-full bg-primary" />
-                  <span className="text-sm text-textMuted">非常强密码</span>
+                  <span className="text-sm text-text">{t('veryStrong')}</span>
                 </div>
-                <span className="text-text font-medium">{passwordStrength.veryStrong}</span>
+                <span className={`text-sm font-semibold px-2.5 py-0.5 rounded-full ${
+                  passwordStrength.veryStrong > 0 ? 'bg-primary/10 text-primary' : 'bg-surfaceHover text-textMuted'
+                }`}>{passwordStrength.veryStrong}</span>
               </div>
             </div>
 
             {passwordStrength.weak > 0 && (
-              <div className="mt-4 p-3 bg-danger/10 border border-danger/20 rounded-lg">
-                <p className="text-sm text-danger">
-                  ⚠️ 您有 {passwordStrength.weak} 个弱密码，建议尽快修改
-                </p>
+              <div className="mt-4 p-4 bg-danger/5 border border-danger/20 rounded-lg">
+                <div className="flex items-start gap-3">
+                  <Icon name="exclamation-triangle" className="w-5 h-5 text-danger mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-danger">{t('securityWarning')}</p>
+                    <p className="text-sm text-textMuted mt-1">{t('weakPasswordWarning', { count: passwordStrength.weak })}</p>
+                  </div>
+                </div>
               </div>
             )}
           </div>
 
-          <div className="bg-surface border border-border rounded-xl p-6">
-            <h2 className="text-lg font-semibold text-text mb-4 flex items-center gap-2">
-              <Icon name="history" className="w-5 h-5 text-primary" />
-              最近活动
-            </h2>
+          <div className="bg-surface border border-border rounded-xl p-6 shadow-sm">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                <Icon name="history" className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-text">{t('recentActivity')}</h2>
+                <p className="text-sm text-textMuted">{language === 'zh' ? '最近的账户操作记录' : 'Recent account activity'}</p>
+              </div>
+            </div>
             
             {recentLogs.length === 0 ? (
-              <p className="text-textMuted text-center py-4">暂无活动记录</p>
+              <div className="text-center py-8">
+                <div className="w-12 h-12 bg-surfaceHover rounded-xl flex items-center justify-center mx-auto mb-3">
+                  <Icon name="inbox" className="w-6 h-6 text-textMuted" />
+                </div>
+                <p className="text-textMuted">{t('noActivity')}</p>
+              </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {recentLogs.map((log) => (
-                  <div key={log.id} className="flex items-center gap-3 p-2 bg-background/50 rounded-lg">
-                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                  <div key={log.id} className="flex items-center gap-3 p-3 bg-background rounded-lg hover:bg-surfaceHover transition-colors">
+                    <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
                       <Icon 
                         name={log.action.includes('create') ? 'plus' : 
                               log.action.includes('update') ? 'edit' : 
@@ -266,10 +333,10 @@ function DashboardContent() {
                         className="w-4 h-4 text-primary" 
                       />
                     </div>
-                    <div className="flex-1">
-                      <p className="text-sm text-text">{ACTION_LABELS[log.action] || log.action}</p>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-text truncate">{ACTION_LABELS[log.action]?.[language] || log.action}</p>
                       <p className="text-xs text-textMuted">
-                        {new Date(log.created_at).toLocaleString('zh-CN')}
+                        {new Date(log.created_at).toLocaleString(language === 'zh' ? 'zh-CN' : 'en-US')}
                       </p>
                     </div>
                   </div>
@@ -278,56 +345,130 @@ function DashboardContent() {
             )}
 
             <Button 
-              onClick={() => window.location.href = '/audit-logs'} 
+              onClick={() => router.push('/audit-logs')} 
               variant="secondary" 
               className="w-full mt-4"
             >
-              查看全部日志
+              <Icon name="arrow-right" className="w-4 h-4 mr-2" />
+              {t('viewAllLogs')}
             </Button>
           </div>
         </div>
 
-        <div className="bg-surface border border-border rounded-xl p-6">
-          <h2 className="text-lg font-semibold text-text mb-4 flex items-center gap-2">
-            <Icon name="chart-pie" className="w-5 h-5 text-primary" />
-            密码强度分布
-          </h2>
-          
-          <div className="flex items-center gap-4 h-8">
-            {totalPasswords > 0 ? (
-              <>
-                {passwordStrength.weak > 0 && (
-                  <div 
-                    className="h-full bg-danger rounded transition-all" 
-                    style={{ width: `${(passwordStrength.weak / totalPasswords) * 100}%` }}
-                    title={`弱密码: ${passwordStrength.weak}`}
-                  />
-                )}
-                {passwordStrength.medium > 0 && (
-                  <div 
-                    className="h-full bg-warning rounded transition-all" 
-                    style={{ width: `${(passwordStrength.medium / totalPasswords) * 100}%` }}
-                    title={`中等密码: ${passwordStrength.medium}`}
-                  />
-                )}
-                {passwordStrength.strong > 0 && (
-                  <div 
-                    className="h-full bg-success rounded transition-all" 
-                    style={{ width: `${(passwordStrength.strong / totalPasswords) * 100}%` }}
-                    title={`强密码: ${passwordStrength.strong}`}
-                  />
-                )}
-                {passwordStrength.veryStrong > 0 && (
-                  <div 
-                    className="h-full bg-primary rounded transition-all" 
-                    style={{ width: `${(passwordStrength.veryStrong / totalPasswords) * 100}%` }}
-                    title={`非常强密码: ${passwordStrength.veryStrong}`}
-                  />
-                )}
-              </>
-            ) : (
-              <div className="h-full bg-background rounded w-full" />
-            )}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="bg-surface border border-border rounded-xl p-6 shadow-sm">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                <Icon name="chart-pie" className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-text">{t('strengthDistribution')}</h2>
+                <p className="text-sm text-textMuted">{language === 'zh' ? '可视化展示您的密码安全状况' : 'Visualize your password security'}</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-2 h-10 rounded-lg overflow-hidden">
+              {totalPasswords > 0 ? (
+                <>
+                  {passwordStrength.weak > 0 && (
+                    <div 
+                      className="h-full bg-danger transition-all flex items-center justify-center" 
+                      style={{ width: `${(passwordStrength.weak / totalPasswords) * 100}%` }}
+                      title={`${t('weak')}: ${passwordStrength.weak}`}
+                    >
+                      {(passwordStrength.weak / totalPasswords) * 100 > 10 && (
+                        <span className="text-xs text-white font-medium">{passwordStrength.weak}</span>
+                      )}
+                    </div>
+                  )}
+                  {passwordStrength.medium > 0 && (
+                    <div 
+                      className="h-full bg-warning transition-all flex items-center justify-center" 
+                      style={{ width: `${(passwordStrength.medium / totalPasswords) * 100}%` }}
+                      title={`${t('medium')}: ${passwordStrength.medium}`}
+                    >
+                      {(passwordStrength.medium / totalPasswords) * 100 > 10 && (
+                        <span className="text-xs text-white font-medium">{passwordStrength.medium}</span>
+                      )}
+                    </div>
+                  )}
+                  {passwordStrength.strong > 0 && (
+                    <div 
+                      className="h-full bg-success transition-all flex items-center justify-center" 
+                      style={{ width: `${(passwordStrength.strong / totalPasswords) * 100}%` }}
+                      title={`${t('strong')}: ${passwordStrength.strong}`}
+                    >
+                      {(passwordStrength.strong / totalPasswords) * 100 > 10 && (
+                        <span className="text-xs text-white font-medium">{passwordStrength.strong}</span>
+                      )}
+                    </div>
+                  )}
+                  {passwordStrength.veryStrong > 0 && (
+                    <div 
+                      className="h-full bg-primary transition-all flex items-center justify-center" 
+                      style={{ width: `${(passwordStrength.veryStrong / totalPasswords) * 100}%` }}
+                      title={`${t('veryStrong')}: ${passwordStrength.veryStrong}`}
+                    >
+                      {(passwordStrength.veryStrong / totalPasswords) * 100 > 10 && (
+                        <span className="text-xs text-white font-medium">{passwordStrength.veryStrong}</span>
+                      )}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="h-full bg-background w-full flex items-center justify-center">
+                  <span className="text-xs text-textMuted">{t('noData')}</span>
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center justify-center gap-6 mt-4">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-danger" />
+                <span className="text-xs text-textMuted">{language === 'zh' ? '弱' : 'Weak'}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-warning" />
+                <span className="text-xs text-textMuted">{language === 'zh' ? '中' : 'Medium'}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-success" />
+                <span className="text-xs text-textMuted">{language === 'zh' ? '强' : 'Strong'}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-primary" />
+                <span className="text-xs text-textMuted">{language === 'zh' ? '非常强' : 'V.Strong'}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-surface border border-border rounded-xl p-6 shadow-sm">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-danger/10 rounded-lg flex items-center justify-center">
+                <Icon name="shield-alt" className="w-5 h-5 text-danger" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-text">{t('breachCheck')}</h2>
+                <p className="text-sm text-textMuted">{t('breachCheckDesc')}</p>
+              </div>
+            </div>
+
+            <div className="p-4 bg-danger/5 border border-danger/20 rounded-lg mb-4">
+              <div className="flex items-start gap-3">
+                <Icon name="info-circle" className="w-5 h-5 text-danger mt-0.5" />
+                <div>
+                  <p className="text-sm text-text">{language === 'zh' ? '使用 Have I Been Pwned API 安全检测您的密码是否在已知数据泄露中出现过。' : 'Use Have I Been Pwned API to safely check if your passwords have appeared in known data breaches.'}</p>
+                </div>
+              </div>
+            </div>
+
+            <Button 
+              onClick={() => router.push('/breach-check')} 
+              className="w-full"
+            >
+              <Icon name="search" className="w-4 h-4 mr-2" />
+              {t('checkBreaches')}
+            </Button>
           </div>
         </div>
       </div>
@@ -338,8 +479,11 @@ function DashboardContent() {
 export default function DashboardPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center">
-        <Icon name="spinner" className="w-8 h-8 text-primary animate-spin" />
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <p className="text-textMuted text-sm">{t('loading')}</p>
+        </div>
       </div>
     }>
       <DashboardContent />
