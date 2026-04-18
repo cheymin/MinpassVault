@@ -67,6 +67,15 @@ export default function SettingsPage() {
   const [emailVerificationLoading, setEmailVerificationLoading] = useState(false)
   const [emailVerificationError, setEmailVerificationError] = useState('')
 
+  const [showWebDAVSettings, setShowWebDAVSettings] = useState(false)
+  const [webdavUrl, setWebdavUrl] = useState('')
+  const [webdavUsername, setWebdavUsername] = useState('')
+  const [webdavPassword, setWebdavPassword] = useState('')
+  const [webdavAutoBackup, setWebdavAutoBackup] = useState(false)
+  const [webdavLoading, setWebdavLoading] = useState(false)
+  const [webdavError, setWebdavError] = useState('')
+  const [backupLoading, setBackupLoading] = useState(false)
+
   useEffect(() => {
     if (user) {
       setSiteTitle(user.siteTitle || 'SecureVault密码管理器')
@@ -102,6 +111,31 @@ export default function SettingsPage() {
     }
     
     loadEmailConfig()
+  }, [user?.id])
+
+  useEffect(() => {
+    const loadWebDAVConfig = async () => {
+      if (user?.id) {
+        try {
+          const { data, error } = await supabase
+            .from('users')
+            .select('webdav_url, webdav_username, webdav_password, webdav_auto_backup')
+            .eq('id', user.id)
+            .single()
+          
+          if (data) {
+            setWebdavUrl(data.webdav_url || '')
+            setWebdavUsername(data.webdav_username || '')
+            setWebdavPassword(data.webdav_password || '')
+            setWebdavAutoBackup(data.webdav_auto_backup || false)
+          }
+        } catch (err) {
+          console.error('Failed to load WebDAV config:', err)
+        }
+      }
+    }
+    
+    loadWebDAVConfig()
   }, [user?.id])
 
   const handleChangePassword = async (e: React.FormEvent) => {
@@ -378,6 +412,101 @@ export default function SettingsPage() {
     }
   }
 
+  const handleTestWebDAV = async () => {
+    if (!webdavUrl || !webdavUsername || !webdavPassword) {
+      setWebdavError('请填写完整的 WebDAV 配置')
+      return
+    }
+
+    setWebdavLoading(true)
+    setWebdavError('')
+
+    try {
+      const response = await fetch('/api/webdav/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          url: webdavUrl,
+          username: webdavUsername,
+          password: webdavPassword,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        showToast('WebDAV 连接成功', 'success')
+      } else {
+        setWebdavError(data.error || '连接失败')
+      }
+    } catch (err) {
+      setWebdavError('连接失败')
+    } finally {
+      setWebdavLoading(false)
+    }
+  }
+
+  const handleSaveWebDAV = async () => {
+    if (!user?.id) return
+
+    setWebdavLoading(true)
+    setWebdavError('')
+
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({
+          webdav_url: webdavUrl,
+          webdav_username: webdavUsername,
+          webdav_password: webdavPassword,
+          webdav_auto_backup: webdavAutoBackup,
+        })
+        .eq('id', user.id)
+
+      if (error) {
+        setWebdavError(error.message)
+      } else {
+        showToast('WebDAV 配置已保存', 'success')
+        setShowWebDAVSettings(false)
+      }
+    } catch (err) {
+      setWebdavError('保存失败')
+    } finally {
+      setWebdavLoading(false)
+    }
+  }
+
+  const handleBackup = async () => {
+    if (!user?.id) return
+
+    setBackupLoading(true)
+
+    try {
+      const response = await fetch('/api/backup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id,
+          webdavUrl,
+          webdavUsername,
+          webdavPassword,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        showToast(`备份成功: ${data.filename}`, 'success')
+      } else {
+        showToast(data.error || '备份失败', 'error')
+      }
+    } catch (err) {
+      showToast('备份失败', 'error')
+    } finally {
+      setBackupLoading(false)
+    }
+  }
+
   const handleDisable2FA = async (e: React.FormEvent) => {
     e.preventDefault()
     setTwoFactorError('')
@@ -580,6 +709,48 @@ export default function SettingsPage() {
               <p className="text-xs text-textMuted">
                 支持 Chrome、Firefox 等浏览器导出的 CSV 格式
               </p>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-surface to-surfaceHover border border-border rounded-2xl p-6 shadow-lg">
+            <h2 className="text-lg font-medium text-text mb-4 flex items-center gap-2">
+              <Icon name="upload" className="w-5 h-5 text-primary" />
+              WebDAV 备份
+            </h2>
+            <p className="text-sm text-textMuted mb-4">
+              配置 WebDAV 自动备份密码数据到云端
+            </p>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center p-3 bg-background/50 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <Icon name="globe" className="w-4 h-4 text-textMuted" />
+                  <span className="text-sm text-text">WebDAV 状态</span>
+                </div>
+                <span className={`text-sm ${webdavUrl ? 'text-success' : 'text-textMuted'}`}>
+                  {webdavUrl ? '已配置' : '未配置'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-background/50 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <Icon name="shield" className="w-4 h-4 text-textMuted" />
+                  <span className="text-sm text-text">自动备份</span>
+                </div>
+                <span className={`text-sm ${webdavAutoBackup ? 'text-success' : 'text-textMuted'}`}>
+                  {webdavAutoBackup ? '已启用' : '未启用'}
+                </span>
+              </div>
+              <Button onClick={() => setShowWebDAVSettings(true)} variant="secondary" className="w-full">
+                配置 WebDAV
+              </Button>
+              <Button 
+                onClick={handleBackup} 
+                variant="secondary" 
+                className="w-full"
+                loading={backupLoading}
+                disabled={!webdavUrl}
+              >
+                立即备份
+              </Button>
             </div>
           </div>
 
@@ -1061,6 +1232,71 @@ export default function SettingsPage() {
           <Button variant="secondary" onClick={() => setShowEmailVerificationSettings(false)} className="w-full">
             关闭
           </Button>
+        </div>
+      </Modal>
+
+      <Modal isOpen={showWebDAVSettings} onClose={() => setShowWebDAVSettings(false)} title="WebDAV 配置" size="sm">
+        <div className="space-y-4">
+          <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg text-sm">
+            <p className="text-text">WebDAV 用于自动备份密码数据到云端存储服务</p>
+          </div>
+          <Input
+            type="url"
+            label="WebDAV 地址"
+            placeholder="https://your-webdav-server.com/dav/"
+            value={webdavUrl}
+            onChange={(e) => setWebdavUrl(e.target.value)}
+          />
+          <Input
+            type="text"
+            label="用户名"
+            placeholder="WebDAV 用户名"
+            value={webdavUsername}
+            onChange={(e) => setWebdavUsername(e.target.value)}
+          />
+          <Input
+            type="password"
+            label="密码"
+            placeholder="WebDAV 密码"
+            value={webdavPassword}
+            onChange={(e) => setWebdavPassword(e.target.value)}
+          />
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="webdavAutoBackup"
+              checked={webdavAutoBackup}
+              onChange={(e) => setWebdavAutoBackup(e.target.checked)}
+              className="w-4 h-4 rounded border-border bg-surface text-primary"
+            />
+            <label htmlFor="webdavAutoBackup" className="text-sm text-text">
+              启用自动备份（每小时）
+            </label>
+          </div>
+          {webdavError && (
+            <div className="p-3 bg-danger/10 border border-danger/20 rounded-lg text-danger text-sm">
+              {webdavError}
+            </div>
+          )}
+          <div className="flex gap-3">
+            <Button 
+              type="button" 
+              variant="secondary" 
+              onClick={handleTestWebDAV} 
+              className="flex-1"
+              loading={webdavLoading}
+            >
+              测试连接
+            </Button>
+            <Button 
+              type="button"
+              onClick={handleSaveWebDAV} 
+              className="flex-1" 
+              loading={webdavLoading}
+            >
+              保存配置
+            </Button>
+          </div>
         </div>
       </Modal>
     </div>

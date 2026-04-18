@@ -106,6 +106,14 @@ export default function VaultPage() {
                 <Icon name="bars" className="w-5 h-5" />
               </Button>
               <div className={`hidden sm:flex items-center gap-1 sm:gap-3 transition-all ${showMobileMenu ? 'flex' : ''}`}>
+                <Button variant="ghost" size="sm" onClick={() => router.push('/dashboard')}>
+                  <Icon name="chart-pie" className="w-4 h-4 mr-1" />
+                  <span className="hidden sm:inline">仪表盘</span>
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => router.push('/audit-logs')}>
+                  <Icon name="history" className="w-4 h-4 mr-1" />
+                  <span className="hidden sm:inline">审计日志</span>
+                </Button>
                 <Button variant="ghost" size="sm" onClick={() => router.push('/settings')}>
                   <Icon name="cog" className="w-4 h-4 mr-1" />
                   <span className="hidden sm:inline">设置</span>
@@ -135,6 +143,14 @@ export default function VaultPage() {
       {showMobileMenu && (
         <div className="sm:hidden fixed top-16 left-0 right-0 bg-surface border-b border-border z-30 animate-fade-in">
           <div className="px-4 py-3 space-y-2">
+            <Button variant="ghost" size="sm" onClick={() => { router.push('/dashboard'); setShowMobileMenu(false) }} className="w-full justify-start">
+              <Icon name="chart-pie" className="w-4 h-4 mr-2" />
+              仪表盘
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => { router.push('/audit-logs'); setShowMobileMenu(false) }} className="w-full justify-start">
+              <Icon name="history" className="w-4 h-4 mr-2" />
+              审计日志
+            </Button>
             <Button variant="ghost" size="sm" onClick={() => { router.push('/settings'); setShowMobileMenu(false) }} className="w-full justify-start">
               <Icon name="cog" className="w-4 h-4 mr-2" />
               设置
