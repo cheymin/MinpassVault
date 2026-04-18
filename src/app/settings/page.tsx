@@ -15,11 +15,6 @@ import { resetDatabase } from '@/lib/init'
 import { generateTOTPSecret, verifyTOTP } from '@/lib/totp'
 import { supabase } from '@/lib/supabase'
 
-const FONTS = [
-  { id: 'default', name: '默认字体', value: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif', url: 'https://pan.346247.xyz/file/font/woshini.woff2' },
-  { id: 'custom', name: '自定义字体链接', value: '', url: '' },
-]
-
 export default function SettingsPage() {
   const { user, signOut, changePassword, updateEmail, enableEmailVerification, disableEmailVerification } = useAuth()
   const { items, addItem } = useVault()
@@ -78,10 +73,6 @@ export default function SettingsPage() {
   const [webdavLoading, setWebdavLoading] = useState(false)
   const [webdavError, setWebdavError] = useState('')
   const [backupLoading, setBackupLoading] = useState(false)
-
-  const [currentFont, setCurrentFont] = useState('default')
-  const [customFontUrl, setCustomFontUrl] = useState('')
-  const [showFontInput, setShowFontInput] = useState(false)
 
   useEffect(() => {
     if (user) {
@@ -142,74 +133,6 @@ export default function SettingsPage() {
     
     loadWebDAVConfig()
   }, [user?.id])
-
-  useEffect(() => {
-    const savedFont = localStorage.getItem('font') || 'default'
-    const savedCustomUrl = localStorage.getItem('customFontUrl') || ''
-    setCurrentFont(savedFont)
-    setCustomFontUrl(savedCustomUrl)
-    if (savedFont === 'custom') {
-      setShowFontInput(true)
-      applyCustomFont(savedCustomUrl)
-    } else {
-      applyFont(savedFont)
-    }
-  }, [])
-
-  const applyFont = (fontId: string) => {
-    const font = FONTS.find(f => f.id === fontId)
-    if (font) {
-      const existingLink = document.getElementById('google-font-link')
-      if (existingLink) {
-        existingLink.remove()
-      }
-      if (font.url) {
-        const link = document.createElement('link')
-        link.id = 'google-font-link'
-        link.rel = 'stylesheet'
-        link.href = font.url
-        document.head.appendChild(link)
-      }
-      document.documentElement.style.setProperty('--font-sans', font.value)
-    }
-  }
-
-  const applyCustomFont = (url: string) => {
-    const existingLink = document.getElementById('google-font-link')
-    if (existingLink) {
-      existingLink.remove()
-    }
-    if (url) {
-      const link = document.createElement('link')
-      link.id = 'google-font-link'
-      link.rel = 'stylesheet'
-      link.href = url
-      document.head.appendChild(link)
-      document.documentElement.style.setProperty('--font-sans', `"CustomFont", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`)
-    }
-  }
-
-  const handleFontChange = (fontId: string) => {
-    setCurrentFont(fontId)
-    localStorage.setItem('font', fontId)
-    if (fontId === 'custom') {
-      setShowFontInput(true)
-      if (customFontUrl) {
-        applyCustomFont(customFontUrl)
-      }
-    } else {
-      setShowFontInput(false)
-      applyFont(fontId)
-    }
-  }
-
-  const handleCustomFontUrlChange = (url: string) => {
-    setCustomFontUrl(url)
-    if (url) {
-      localStorage.setItem('customFontUrl', url)
-      applyCustomFont(url)
-    }
-  }
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -735,50 +658,6 @@ export default function SettingsPage() {
                     English
                   </button>
                 </div>
-              </div>
-
-              <div className="py-2">
-                <div className="flex justify-between items-center mb-2">
-                  <div>
-                    <span className="text-text text-sm font-medium">{t('font')}</span>
-                    <p className="text-xs text-textMuted">{language === 'zh' ? '选择界面字体' : 'Select interface font'}</p>
-                  </div>
-                  <button
-                    onClick={() => setShowFontInput(!showFontInput)}
-                    className="text-sm text-primary hover:text-primaryHover flex items-center gap-1"
-                  >
-                    {showFontInput ? '收起' : '展开'}
-                    <Icon name={showFontInput ? 'chevron-up' : 'chevron-down'} className="w-4 h-4" />
-                  </button>
-                </div>
-                {showFontInput && (
-                  <div className="space-y-2">
-                    <div className="flex flex-col gap-2">
-                      {FONTS.map(font => (
-                        <button
-                          key={font.id}
-                          onClick={() => handleFontChange(font.id)}
-                          className={`px-3 py-2 rounded-lg text-sm text-left transition-colors ${
-                            currentFont === font.id
-                              ? 'bg-primary text-white'
-                              : 'bg-surfaceHover text-text hover:bg-surface'
-                          }`}
-                        >
-                          {font.name}
-                        </button>
-                      ))}
-                    </div>
-                    {currentFont === 'custom' && (
-                      <Input
-                        type="text"
-                        placeholder="输入字体文件链接 (如：https://example.com/font.woff2)"
-                        value={customFontUrl}
-                        onChange={(e) => handleCustomFontUrlChange(e.target.value)}
-                        className="w-full"
-                      />
-                    )}
-                  </div>
-                )}
               </div>
             </div>
           </div>
