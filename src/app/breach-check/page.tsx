@@ -39,12 +39,12 @@ export default function BreachCheckPage() {
     setProgress(0)
     setResults([])
 
-    const loginItems = items.filter(item => item.type === 'login' && item.data?.password)
+    const loginItems = items.filter(item => item.type === 'login')
     const passwords = loginItems.map(item => ({
       id: item.id,
       name: item.name,
-      password: item.data.password,
-    }))
+      password: (item.data as any).password,
+    })).filter(item => item.password)
 
     const checkedResults: BreachItem[] = []
     
