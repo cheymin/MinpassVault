@@ -56,28 +56,38 @@ function ToastContainer({ toasts, hideToast }: { toasts: Toast[]; hideToast: (id
   }
 
   const typeGradients: Record<ToastType, string> = {
-    success: 'from-success to-green-600',
+    success: 'bg-[#22c55e]',
     error: 'from-danger to-red-600',
     warning: 'from-warning to-amber-600',
     info: 'from-primaryLight to-blue-600',
   }
 
   return (
-    <div className="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none p-2 sm:p-4">
+    <div className="fixed top-4 right-4 z-50 flex flex-col gap-3 pointer-events-none p-4 sm:p-6">
       {toasts.map(toast => (
         <div
           key={toast.id}
-          className="bg-gradient-to-r from-surface to-surfaceHover border border-border/50 backdrop-blur-xl rounded-xl shadow-lg flex items-center gap-3 pointer-events-auto animate-slide-in hover:shadow-glow transition-all duration-300 min-w-[280px] max-w-sm"
+          className={`${
+            toast.type === 'success' ? 'bg-[#22c55e]' : `bg-gradient-to-r ${typeGradients[toast.type]}`
+          } backdrop-blur-xl rounded-2xl shadow-2xl flex items-center gap-4 pointer-events-auto animate-slide-in hover:shadow-glow transition-all duration-300 min-w-[320px] max-w-md px-6 py-4`}
         >
-          <div className={`bg-gradient-to-r ${typeGradients[toast.type]} p-2 rounded-lg`}>
-            <span className="text-white text-lg">{typeIcons[toast.type]}</span>
-          </div>
-          <span className="text-sm font-medium text-text flex-1">{toast.message}</span>
+          {toast.type === 'success' ? (
+            <div className="text-white">
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+          ) : (
+            <div className={`bg-gradient-to-r ${typeGradients[toast.type]} p-3 rounded-xl`}>
+              <span className="text-white text-xl">{typeIcons[toast.type]}</span>
+            </div>
+          )}
+          <span className={`text-base font-semibold ${toast.type === 'success' ? 'text-white' : 'text-text'} flex-1`}>{toast.message}</span>
           <button
             onClick={() => hideToast(toast.id)}
-            className="text-textMuted hover:text-text transition-colors p-1 rounded-lg hover:bg-surface"
+            className={`${toast.type === 'success' ? 'text-white/70 hover:text-white' : 'text-textMuted hover:text-text'} transition-colors p-2 rounded-xl hover:bg-black/10`}
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
