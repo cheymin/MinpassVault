@@ -482,7 +482,7 @@ export default function DashboardPage() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          <p className="text-textMuted text-sm">{t('loading')}</p>
+          <p className="text-textMuted text-sm">加载中...</p>
         </div>
       </div>
     }>
